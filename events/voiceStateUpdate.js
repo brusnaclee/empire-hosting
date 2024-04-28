@@ -1,0 +1,114 @@
+const db = require('../mongoDB');
+const { EmbedBuilder } = require('discord.js');
+module.exports = async (client, oldState, newState) => {
+	const queue = client.player.getQueue(oldState.guild.id);
+	if (queue || queue?.playing) {
+		if (client?.config?.opt?.voiceConfig?.leaveOnEmpty?.status === true) {
+			let lang = await db?.musicbot?.findOne({
+				guildID: queue?.textChannel?.guild?.id,
+			});
+			lang = lang?.language || client.language;
+			lang = require(`../languages/${lang}.js`);
+			setTimeout(async () => {
+				let botChannel = oldState?.guild?.channels?.cache?.get(
+					queue?.voice?.connection?.joinConfig?.channelId
+				);
+				if (botChannel) {
+					if (botChannel.id == oldState.channelId)
+						if (botChannel?.members?.find((x) => x == client?.user?.id)) {
+							if (botChannel?.members?.size == 1) {
+								const embed = new EmbedBuilder()
+									.setColor('#FF0000')
+									.setTimestamp()
+									.setDescription(
+										`${lang.msg15} <a:Thankyou:1117120334810857623>`
+									)
+									.setFooter({ text: `Empire ❤️` });
+
+								await queue?.textChannel
+									?.send({ embeds: [embed] })
+									.catch((e) => {});
+								if (queue.lastPlaylistMessageId) {
+									try {
+										queue.textChannel.messages
+											.fetch(queue.lastPlaylistMessageId)
+											.then((message) => {
+												if (message) {
+													message.delete().catch(console.error);
+												}
+											})
+											.catch(console.error);
+									} catch (error) {
+										console.error(
+											'Gagal menghapus pesan dari queue.lastPlaylistMessageId:',
+											error
+										);
+									}
+								}
+
+								if (queue.lastMessagesId) {
+									queue.lastMessagesId.forEach(async (messageId) => {
+										try {
+											const message = await queue.textChannel.messages.fetch(
+												messageId
+											);
+											await message
+												.edit({ components: [] })
+												.catch(console.error); // Hapus komponen tombol dari pesan sebelumnya
+										} catch (error) {
+											console.error('Gagal menghapus pesan:', error);
+										}
+									});
+								}
+								// Hapus semua pesan yang telah terkirim sebelumnya
+								if (queue.lastSongMessageId) {
+									queue.lastSongMessageId.forEach(async (messageId) => {
+										try {
+											const message = await queue.textChannel.messages.fetch(
+												messageId
+											);
+											await message.delete();
+										} catch (error) {
+											console.error('Gagal menghapus pesan:', error);
+										}
+									});
+								}
+								if (queue || queue?.playing) {
+									return queue?.stop(oldState.guild.id);
+								}
+							}
+						}
+				}
+			}, client?.config?.opt?.voiceConfig?.leaveOnEmpty?.cooldown || 60000);
+		}
+
+		if (newState.id === client.user.id) {
+			let lang = await db?.musicbot?.findOne({
+				guildID: queue?.textChannel?.guild?.id,
+			});
+			lang = lang?.language || client.language;
+			lang = require(`../languages/${lang}.js`);
+			if (oldState.serverMute === false && newState.serverMute === true) {
+				if (queue?.textChannel) {
+					try {
+						await queue?.pause();
+					} catch (e) {
+						return;
+					}
+					await queue?.textChannel
+						?.send({ content: `${lang.msg128}` })
+						.catch((e) => {});
+				}
+			}
+			if (oldState.serverMute === true && newState.serverMute === false) {
+				if (queue?.textChannel) {
+					try {
+						await queue.resume();
+					} catch (e) {
+						return;
+					}
+				}
+			}
+		}
+	}
+};
