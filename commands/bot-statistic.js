@@ -76,12 +76,18 @@ module.exports = {
 				2
 			);
 
-			exec('getprop ro.build.version.release', (error, stdout, stderr) => {
+			exec('lsb_release -a', (error, stdout, stderr) => {
 				if (error) {
 					console.error(`exec error: ${error}`);
 					return;
 				}
-				const osVersion = stdout.trim(); // Menghapus spasi di sekitar hasil eksekusi
+				const osInfoLines = stdout.trim().split('\n'); // Pisahkan baris dalam output menjadi array
+				const descriptionLine = osInfoLines.find((line) =>
+					line.startsWith('Description:')
+				); // Cari baris yang mengandung informasi Description
+				const osVersion = descriptionLine
+					? descriptionLine.split(':')[1].trim()
+					: 'Unknown'; // Ambil informasi Description jika ditemukan
 
 				// Menjalankan perintah lscpu menggunakan child process
 				exec('lscpu', (error, stdout, stderr) => {
