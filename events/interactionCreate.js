@@ -345,6 +345,7 @@ module.exports = async (client, interaction) => {
 						}
 						break;
 					case 'time': {
+						const queue = client?.player?.getQueue(interaction?.guildId);
 						if (!queue || !queue?.playing) {
 							return interaction
 								?.reply({
