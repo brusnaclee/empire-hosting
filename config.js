@@ -1,6 +1,6 @@
+require('dotenv').config();
 module.exports = {
-	TOKEN:
-		'MTA0NDA2MzQxMzgzMzMwMjEwOA.G8xKrr.xri9yZBdVIwAm2TOhZR7AtUlC690EsL2MQfZgg',
+	TOKEN: process.env.TOKEN,
 	ownerID: '522711969560657921', //write your discord user id. example: ["id"] or ["id1","id2"]
 	ownerID2: ['522711969560657921', '558280654412840993'],
 	botInvite:
