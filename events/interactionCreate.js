@@ -228,13 +228,9 @@ module.exports = async (client, interaction) => {
 				const queue = client?.player?.getQueue(interaction?.guildId);
 				switch (interaction?.customId) {
 					case 'save':
-						const ytdl = require('ytdl-core');
 						const fs = require('fs');
-						const util = require('util');
-						const { google } = require('googleapis');
-						const axios = require('axios');
 
-						const stat = util.promisify(fs.stat);
+						const axios = require('axios');
 
 						const queue = client?.player?.getQueue(interaction?.guildId);
 
@@ -317,7 +313,7 @@ module.exports = async (client, interaction) => {
 						break;
 					case 'saveTrack':
 						{
-						    const queue = client?.player?.getQueue(interaction?.guildId);
+							const queue = client?.player?.getQueue(interaction?.guildId);
 							if (!queue || !queue?.playing) {
 								return interaction
 									?.reply({
