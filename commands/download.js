@@ -1,12 +1,7 @@
-const fs = require('fs');
 const { EmbedBuilder } = require('discord.js');
 const db = require('../mongoDB');
-const ytdl = require('ytdl-core');
-const util = require('util');
-const axios = require('axios');
-const { google } = require('googleapis');
 
-const stat = util.promisify(fs.stat);
+const axios = require('axios');
 
 module.exports = {
 	name: 'download',
