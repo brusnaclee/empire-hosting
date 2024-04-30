@@ -53,7 +53,7 @@ module.exports = {
 		},
 
 		voiceConfig: {
-			leaveOnFinish: true, //If this variable is "true", the bot will leave the channel the music ends.
+			leaveOnFinish: false, //If this variable is "true", the bot will leave the channel the music ends.
 			leaveOnStop: true, //If this variable is "true", the bot will leave the channel when the music is stopped.
 
 			leaveOnEmpty: {
