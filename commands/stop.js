@@ -82,6 +82,17 @@ module.exports = {
 				}
 			}
 
+			if (queue.lastMessagesId) {
+				queue.lastMessagesId.forEach(async (messageId) => {
+					try {
+						const message = await queue.textChannel.messages.fetch(messageId);
+						await message.edit({ components: [] }).catch(console.error); // Hapus komponen tombol dari pesan sebelumnya
+					} catch (error) {
+						console.error('Gagal menghapus pesan:', error);
+					}
+				});
+			}
+
 			// Hapus semua pesan yang telah terkirim sebelumnya\
 			if (queue.lastSongMessageId) {
 				queue.lastSongMessageId.forEach(async (messageId) => {
