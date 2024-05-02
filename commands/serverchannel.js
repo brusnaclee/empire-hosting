@@ -1,7 +1,7 @@
 const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
-  name: "serverchannel",
+  name: "sc",
   description: "Admin command.",
   options: [{
     name: "server_id",
