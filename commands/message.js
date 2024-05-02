@@ -5,7 +5,7 @@ const {
 } = require('discord.js');
 
 module.exports = {
-	name: 'message',
+	name: 'msg',
 	description: 'Admin command.',
 	options: [
 		{
