@@ -1,7 +1,7 @@
 const { ApplicationCommandOptionType, DiscordAPIError } = require('discord.js');
 
 module.exports = {
-  name: 'sendmessage',
+  name: 'sm',
   description: 'Admin command.',
   options: [
     {
