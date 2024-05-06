@@ -72,6 +72,13 @@ module.exports = {
 				voiceConnections = client?.voice?.adapters?.size || 0;
 			}
 
+			await interaction.deferReply({
+
+				content: 'loading',
+
+			});
+
+
 			const usedMemory = ((os.totalmem() - os.freemem()) / 1024 / 1024).toFixed(
 				2
 			);
@@ -191,7 +198,7 @@ ${
 **`);
 
 					interaction
-						.reply({
+					.editReply({
 							embeds: [embed],
 							components: [buttonRow],
 						})
