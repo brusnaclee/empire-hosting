@@ -67,12 +67,14 @@ module.exports = async (client, queue, oldState) => {
 		}
 	}
 
+	const startTime = Date.now();
+
 	// Set interval timer untuk melakukan pengecekan setiap beberapa detik
 	const interval = setInterval(async () => {
 		const queueCheck = client.player.getQueue(queue?.textChannel?.guild?.id);
 		if (!queueCheck || !queueCheck.playing) {
 			// Jika tidak ada lagu yang diputar
-			const elapsedTime = Date.now() - queue.startTime; // Waktu yang telah berlalu sejak queue dimulai
+			const elapsedTime = Date.now() - startTime; // Waktu yang telah berlalu sejak queue dimulai
 			const maxElapsedTime = 180000; // Durasi maksimum dalam milisecond (180 detik)
 			if (elapsedTime >= maxElapsedTime) {
 				// Jika waktu yang berlalu sudah mencapai durasi maksimum
