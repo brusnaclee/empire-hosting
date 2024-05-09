@@ -67,38 +67,51 @@ module.exports = async (client, queue, oldState) => {
 		}
 	}
 
-	// Menunggu selama 3 menit
-	await new Promise((resolve) => setTimeout(resolve, 180000));
+	// Set interval timer untuk melakukan pengecekan setiap beberapa detik
+	const interval = setInterval(async () => {
+		const queueCheck = client.player.getQueue(queue?.textChannel?.guild?.id);
+		if (!queueCheck || !queueCheck.playing) {
+			// Jika tidak ada lagu yang diputar
+			const elapsedTime = Date.now() - queue.startTime; // Waktu yang telah berlalu sejak queue dimulai
+			const maxElapsedTime = 180000; // Durasi maksimum dalam milisecond (180 detik)
+			if (elapsedTime >= maxElapsedTime) {
+				// Jika waktu yang berlalu sudah mencapai durasi maksimum
 
-	// Setelah 2 menit, cek apakah ada lagu yang sedang diputar
-	const queueCheck = client.player.getQueue(queue?.textChannel?.guild?.id);
-	if (!queueCheck || !queueCheck.playing) {
-		// Jika tidak ada lagu yang diputar, kirim pesan baru
-		const newEmbed = new EmbedBuilder()
-			.setColor('#FF0000')
-			.setTimestamp()
-			.setDescription(`${lang.msg148} <a:Thankyou:1117120334810857623>`)
-			.setFooter({ text: `Empire ❤️` });
+				const newEmbed = new EmbedBuilder()
+					.setColor('#FF0000')
+					.setTimestamp()
+					.setDescription(`${lang.msg148} <a:Thankyou:1117120334810857623>`)
+					.setFooter({ text: `Empire ❤️` });
 
-		queue?.textChannel?.send({ embeds: [newEmbed] }).catch(console.error);
-		const leaveOnEmpty = client.config.opt.voiceConfig.leaveOnEmpty?.status;
+				queue?.textChannel?.send({ embeds: [newEmbed] }).catch(console.error);
 
-		// Jika konfigurasi leaveOnEmpty tidak diset atau false, maka keluar dari event
-		if (!leaveOnEmpty) return;
-		// Hentikan pemutaran lagu dan keluar dari voice channel
-		queue.stop();
-	} else {
-		try {
-			queue.textChannel.messages
-				.fetch(queue.FinishMessageId)
-				.then((message) => {
-					if (message) {
-						message.delete().catch(console.error);
-					}
-				})
-				.catch(console.error);
-		} catch (error) {
-			console.error('Gagal menghapus pesan dari queue.FinishMessageId:', error);
+				const leaveOnEmpty = client.config.opt.voiceConfig.leaveOnEmpty?.status;
+				if (!leaveOnEmpty) {
+					clearInterval(interval); // Hentikan interval timer jika tidak perlu lagi
+					return;
+				}
+				// Hentikan pemutaran lagu dan keluar dari voice channel
+				queue.stop();
+				clearInterval(interval); // Hentikan interval timer setelah keluar
+			}
+		} else {
+			// Jika ada lagu yang diputar, hapus pesan sebelumnya jika ada
+			try {
+				queue.textChannel.messages
+					.fetch(queue.FinishMessageId)
+					.then((message) => {
+						if (message) {
+							message.delete().catch(console.error);
+						}
+					})
+					.catch(console.error);
+			} catch (error) {
+				console.error(
+					'Gagal menghapus pesan dari queue.FinishMessageId:',
+					error
+				);
+			}
+			clearInterval(interval); // Hentikan interval timer jika lagu sudah diputar
 		}
-	}
+	}, 3000); // Set interval timer untuk berjalan setiap 3 detik
 };
