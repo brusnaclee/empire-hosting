@@ -1,5 +1,6 @@
 const db = require('../../mongoDB');
 const { EmbedBuilder } = require('discord.js');
+const { updateCalculate } = require('../../commands/play.js');
 
 module.exports = async (client, queue, playlist) => {
 	let lang = await db?.musicbot?.findOne({
@@ -8,11 +9,14 @@ module.exports = async (client, queue, playlist) => {
 	lang = lang?.language || client.language;
 	lang = require(`../../languages/${lang}.js`);
 
+	const calculatedValue = await updateCalculate();
+	console.log(calculatedValue);
+
 	const embed = new EmbedBuilder()
 		.setColor('00FF7D')
 		.setTimestamp()
 		.setDescription(
-			`<@${playlist.user.id}>, \`${playlist.name} (${playlist.songs.length} ${lang.msg116})\` ${lang.msg62} <a:Ceklis:1116989553744552007>`
+			`<@${playlist.user.id}>, \`${playlist.name} (${calculatedValue} ${lang.msg116})\` ${lang.msg62} <a:Ceklis:1116989553744552007>`
 		)
 		.setFooter({ text: `Empire ❤️` });
 
