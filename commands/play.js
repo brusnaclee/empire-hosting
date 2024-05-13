@@ -15,9 +15,6 @@ const updateCalculate = (value) => {
 		if (calculate !== undefined && calculate > 0) {
 			resolve(calculate);
 		} else {
-			console.log(
-				'Nilai calculate tidak memenuhi syarat, menunggu perhitungan kembali.'
-			);
 			setTimeout(() => {
 				updateCalculate(calculate).then(resolve).catch(reject);
 			}, 1000);
