@@ -5,6 +5,26 @@ const {
 } = require('discord.js');
 const axios = require('axios');
 const db = require('../mongoDB');
+
+let calculate = [];
+
+const updateCalculate = (value) => {
+	return new Promise((resolve, reject) => {
+		calculate = value;
+
+		if (calculate !== undefined && calculate > 0) {
+			resolve(calculate);
+		} else {
+			console.log(
+				'Nilai calculate tidak memenuhi syarat, menunggu perhitungan kembali.'
+			);
+			setTimeout(() => {
+				updateCalculate(calculate).then(resolve).catch(reject);
+			}, 1000);
+		}
+	});
+};
+
 module.exports = {
 	name: 'play',
 	description: 'Play a track.',
@@ -51,10 +71,14 @@ module.exports = {
 		},
 	],
 	voiceChannel: true,
+
 	run: async (client, interaction) => {
 		let lang = await db?.musicbot?.findOne({ guildID: interaction.guild.id });
 		lang = lang?.language || client.language;
 		lang = require(`../languages/${lang}.js`);
+
+		const queue = client?.player?.getQueue(interaction?.guildId);
+		beforeposition = queue?.songs?.length || 0;
 
 		try {
 			let stp = interaction.options.getSubcommand();
@@ -251,6 +275,7 @@ module.exports = {
 
 					await new Promise((resolve) => setTimeout(resolve, 10000));
 				}
+
 				await interaction.deleteReply().catch((err) => console.error(err));
 
 				const voiceChannelName = interaction.member.voice.channel.name;
@@ -287,6 +312,7 @@ module.exports = {
 					console.error('Error sending embed message:', error);
 				});
 			}
+
 			if (stp === 'next') {
 				const name = interaction.options.getString('name');
 				if (!name)
@@ -377,5 +403,13 @@ module.exports = {
 			const errorNotifer = require('../functions.js');
 			errorNotifer(client, interaction, e, lang);
 		}
+
+		afterposition = queue?.songs?.length || 0;
+		calculate = afterposition - beforeposition;
+		beforeposition = afterposition;
+
+		await updateCalculate(calculate);
+		return calculate;
 	},
+	updateCalculate: updateCalculate,
 };
