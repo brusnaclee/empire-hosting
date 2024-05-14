@@ -9,7 +9,19 @@ module.exports = async (client, queue, playlist) => {
 	lang = lang?.language || client.language;
 	lang = require(`../../languages/${lang}.js`);
 
-	const calculatedValue = await updateCalculate();
+	// Create a promise that resolves with playlist.songs.length after 15 seconds
+	const timeoutPromise = new Promise((resolve) => {
+		setTimeout(() => {
+			resolve(playlist.songs.length);
+		}, 30000); // 30 seconds timeout
+	});
+
+	// Use Promise.race to wait for either updateCalculate or the timeout promise
+	const calculatedValue = await Promise.race([
+		updateCalculate(),
+		timeoutPromise,
+	]);
+
 	console.log(calculatedValue);
 
 	const embed = new EmbedBuilder()
