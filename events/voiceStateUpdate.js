@@ -1,5 +1,10 @@
 const db = require('../mongoDB');
-const { EmbedBuilder } = require('discord.js');
+const {
+	EmbedBuilder,
+	ButtonBuilder,
+	ActionRowBuilder,
+	ButtonStyle,
+} = require('discord.js');
 module.exports = async (client, oldState, newState) => {
 	const queue = client.player.getQueue(oldState.guild.id);
 	if (queue || queue?.playing) {
@@ -25,8 +30,25 @@ module.exports = async (client, oldState, newState) => {
 									)
 									.setFooter({ text: `Empire ❤️` });
 
+								const linkvote = new ButtonBuilder()
+									.setLabel('Vote Us!')
+									.setURL('https://top.gg/bot/1044063413833302108/vote')
+									.setStyle(ButtonStyle.Link);
+
+								const linkinvite = new ButtonBuilder()
+									.setLabel('Invite Us!')
+									.setURL(
+										'https://discord.com/oauth2/authorize?client_id=1044063413833302108&permissions=414585318465&scope=bot+applications.commands'
+									)
+									.setStyle(ButtonStyle.Link);
+
+								const Row = new ActionRowBuilder().addComponents(
+									linkvote,
+									linkinvite
+								);
+
 								await queue?.textChannel
-									?.send({ embeds: [embed] })
+									?.send({ embeds: [embed], components: [Row] })
 									.catch((e) => {});
 								if (queue.lastPlaylistMessageId) {
 									try {
