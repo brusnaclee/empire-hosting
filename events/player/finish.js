@@ -1,5 +1,10 @@
 const db = require('../../mongoDB');
-const { EmbedBuilder } = require('discord.js');
+const {
+	EmbedBuilder,
+	ButtonBuilder,
+	ActionRowBuilder,
+	ButtonStyle,
+} = require('discord.js');
 const { lastSongMessageId } = require('./addSong.js');
 
 module.exports = async (client, queue, oldState) => {
@@ -85,7 +90,23 @@ module.exports = async (client, queue, oldState) => {
 					.setDescription(`${lang.msg148} <a:Thankyou:1117120334810857623>`)
 					.setFooter({ text: `Empire ❤️` });
 
-				queue?.textChannel?.send({ embeds: [newEmbed] }).catch(console.error);
+				const linkvote = new ButtonBuilder()
+					.setLabel('Vote Us!')
+					.setURL('https://top.gg/bot/1044063413833302108/vote')
+					.setStyle(ButtonStyle.Link);
+
+				const linkinvite = new ButtonBuilder()
+					.setLabel('Invite Us!')
+					.setURL(
+						'https://discord.com/oauth2/authorize?client_id=1044063413833302108&permissions=414585318465&scope=bot+applications.commands'
+					)
+					.setStyle(ButtonStyle.Link);
+
+				const Row = new ActionRowBuilder().addComponents(linkvote, linkinvite);
+
+				queue?.textChannel
+					?.send({ embeds: [newEmbed], components: [Row] })
+					.catch(console.error);
 
 				const leaveOnEmpty = client.config.opt.voiceConfig.leaveOnEmpty?.status;
 				if (!leaveOnEmpty) {
