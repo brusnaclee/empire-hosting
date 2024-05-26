@@ -103,15 +103,15 @@ module.exports = async (client, queue, song) => {
 		queue.songHistory.every((name) => name === song.name)
 	) {
 		const loopembed = new EmbedBuilder();
-		loopembed.setTitle('Useful recommendations');
+		loopembed.setTitle('System recommendations');
 		loopembed.setColor(client.config.embedColor);
 		loopembed.setThumbnail(song.thumbnail);
 		loopembed.setDescription(
-			`We are detecting loop music added on queue
+			`We have detected the same song being added to the queue multiple times.
 
-			Did you know that you can loop your music with </loop:1108304252620771387> command?
+			Did you know that you can loop your music using the </loop:1108304252620771387> command?
 			
-			For more useful command let's explore </help:1109382664458338315> <a:send:1117660959171956776>`
+			For more information on available commands, explore </help:1109382664458338315> <a:send:1117660959171956776>`
 		);
 		loopembed.setTimestamp();
 		loopembed.setFooter({ text: 'Empire ❤️' });
