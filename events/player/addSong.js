@@ -86,4 +86,47 @@ module.exports = async (client, queue, song) => {
 			queue.lastSongMessageId.push(newMessage.id); // Menyimpan ID pesan baru dengan nama queue.lastSongMessageId
 		})
 		.catch(console.error);
+
+	// Logika deteksi loop
+	if (!queue.songHistory) {
+		queue.songHistory = [];
+	}
+
+	queue.songHistory.push(song.name);
+
+	if (queue.songHistory.length > 3) {
+		queue.songHistory.shift(); // Hanya menyimpan 3 lagu terakhir
+	}
+
+	if (
+		queue.songHistory.length === 3 &&
+		queue.songHistory.every((name) => name === song.name)
+	) {
+		const loopembed = new EmbedBuilder();
+		loopembed.setTitle('Useful recommendations');
+		loopembed.setColor(client.config.embedColor);
+		loopembed.setThumbnail(song.thumbnail);
+		loopembed.setDescription(
+			`We are detecting loop music added on queue
+
+			Did you know that you can loop your music with </loop:1108304252620771387> command?
+			
+			For more useful command let's explore </help:1109382664458338315> <a:send:1117660959171956776>`
+		);
+		loopembed.setTimestamp();
+		loopembed.setFooter({ text: 'Empire ❤️' });
+
+		const loop = {
+			embeds: [loopembed],
+		};
+
+		queue.textChannel
+			.send(loop)
+			.then(() => {
+				setTimeout(async () => {
+					await message.delete().catch((err) => console.error(err));
+				}, 120000); // 120 seconds or 2 minute
+			})
+			.catch((err) => {});
+	}
 };
