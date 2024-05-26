@@ -122,9 +122,9 @@ module.exports = async (client, queue, song) => {
 
 		queue.textChannel
 			.send(loop)
-			.then(() => {
+			.then((loopMessage) => {
 				setTimeout(async () => {
-					await message.delete().catch((err) => console.error(err));
+					await loopMessage.delete().catch((err) => console.error(err));
 				}, 120000); // 120 seconds or 2 minute
 			})
 			.catch((err) => {});
