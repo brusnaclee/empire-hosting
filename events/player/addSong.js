@@ -119,6 +119,7 @@ module.exports = async (client, queue, song) => {
 		const loop = {
 			embeds: [loopembed],
 		};
+		console.log('Same Music');
 
 		queue.textChannel
 			.send(loop)
