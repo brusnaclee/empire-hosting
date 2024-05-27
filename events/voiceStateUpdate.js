@@ -47,9 +47,6 @@ module.exports = async (client, oldState, newState) => {
 									linkinvite
 								);
 
-								await queue?.textChannel
-									?.send({ embeds: [embed], components: [Row] })
-									.catch((e) => {});
 								if (queue.lastPlaylistMessageId) {
 									try {
 										queue.textChannel.messages
@@ -95,6 +92,11 @@ module.exports = async (client, oldState, newState) => {
 										}
 									});
 								}
+
+								await queue?.textChannel
+									?.send({ embeds: [embed], components: [Row] })
+									.catch((e) => {});
+
 								if (queue || queue?.playing) {
 									return queue?.stop(oldState.guild.id);
 								}
@@ -104,7 +106,7 @@ module.exports = async (client, oldState, newState) => {
 			}, client?.config?.opt?.voiceConfig?.leaveOnEmpty?.cooldown || 60000);
 		}
 
-		if (!newState.channel) {
+		if (!newState.channel && oldState.id === client.user.id) {
 			// Tambahkan logika atau kode yang ingin dijalankan ketika bot di-kick dari voice channel di sini
 			let lang = await db?.musicbot?.findOne({
 				guildID: queue?.textChannel?.guild?.id,
@@ -112,7 +114,7 @@ module.exports = async (client, oldState, newState) => {
 			lang = lang?.language || client.language;
 			lang = require(`../languages/${lang}.js`);
 
-			const embed = new EmbedBuilder()
+			const kickembed = new EmbedBuilder()
 				.setColor('#FF0000')
 				.setTimestamp()
 				.setDescription(`${lang.msg16} `)
@@ -133,7 +135,7 @@ module.exports = async (client, oldState, newState) => {
 			const Row = new ActionRowBuilder().addComponents(linkvote, linkinvite);
 
 			await queue?.textChannel
-				?.send({ embeds: [embed], components: [Row] })
+				?.send({ embeds: [kickembed], components: [Row] })
 				.catch((e) => {});
 			if (queue.lastPlaylistMessageId) {
 				try {
@@ -193,14 +195,14 @@ module.exports = async (client, oldState, newState) => {
 					} catch (e) {
 						return;
 					}
-					const embed = new EmbedBuilder()
+					const muteembed = new EmbedBuilder()
 						.setColor('#FF0000')
 						.setTimestamp()
 						.setDescription(`${lang.msg128}`)
 						.setFooter({ text: `Empire ❤️` });
 
 					await queue?.textChannel
-						?.send({ embeds: [embed] })
+						?.send({ embeds: [muteembed] })
 						.then((newMessage) => {
 							queue.MuteMessageId = newMessage.id; // Menyimpan ID pesan baru dengan nama lastPlaylistMessageId
 						})
