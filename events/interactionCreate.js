@@ -593,42 +593,35 @@ module.exports = async (client, interaction) => {
 								})
 								.catch((e) => {});
 
-							// Wait until the music is playing again
-							const checkQueuePlaying = async () => {
-								while (!queue.playing) {
-									await new Promise((resolve) => setTimeout(resolve, 1000));
-								}
+							while (!queue.playing) {
+								await new Promise((resolve) => setTimeout(resolve, 1000));
+							}
 
-								setTimeout(async () => {
-									const resumeEmbed = new EmbedBuilder()
-										.setColor('00FF7D')
-										.setThumbnail(queue.songs[0].thumbnail)
-										.setTimestamp()
-										.setDescription(
-											`**${queue.songs[0].name}**, ${lang.msg72} <a:Ceklis:1116989553744552007>`
-										)
-										.setFooter({ text: 'Empire ❤️' });
+							const resumeEmbed = new EmbedBuilder()
+								.setColor('00FF7D')
+								.setThumbnail(queue.songs[0].thumbnail)
+								.setTimestamp()
+								.setDescription(
+									`**${queue.songs[0].name}**, ${lang.msg72} <a:Ceklis:1116989553744552007>`
+								)
+								.setFooter({ text: 'Empire ❤️' });
 
-									const pauseBtn = new ButtonBuilder()
-										.setCustomId('pause_button')
-										.setEmoji('⏸️')
-										.setStyle(ButtonStyle.Success);
+							const pauseBtn = new ButtonBuilder()
+								.setCustomId('pause_button')
+								.setEmoji('⏸️')
+								.setStyle(ButtonStyle.Success);
 
-									const actionRowResume = new ActionRowBuilder().addComponents(
-										backBtn,
-										pauseBtn,
-										skipBtn
-									);
-									await replyMessage
-										.edit({
-											embeds: [resumeEmbed],
-											components: [actionRowResume, actionRow2, actionRow3],
-										})
-										.catch(console.error);
-								}, 1000); // Delay the second update by 1 second
-							};
-
-							checkQueuePlaying();
+							const actionRowResume = new ActionRowBuilder().addComponents(
+								backBtn,
+								pauseBtn,
+								skipBtn
+							);
+							await replyMessage
+								.edit({
+									embeds: [resumeEmbed],
+									components: [actionRowResume, actionRow2, actionRow3],
+								})
+								.catch(console.error);
 						} catch (e) {
 							const queue = client.player.getQueue(interaction.guild.id);
 							if (!interaction?.member?.voice?.channelId)
@@ -843,6 +836,23 @@ module.exports = async (client, interaction) => {
 								)
 								.setFooter({ text: 'Empire ❤️' });
 
+							const linkvote = new ButtonBuilder()
+								.setLabel('Vote Us!')
+								.setURL('https://top.gg/bot/1044063413833302108/vote')
+								.setStyle(ButtonStyle.Link);
+
+							const linkinvite = new ButtonBuilder()
+								.setLabel('Invite Us!')
+								.setURL(
+									'https://discord.com/oauth2/authorize?client_id=1044063413833302108&permissions=414585318465&scope=bot+applications.commands'
+								)
+								.setStyle(ButtonStyle.Link);
+
+							const Row = new ActionRowBuilder().addComponents(
+								linkvote,
+								linkinvite
+							);
+
 							if (queue.lastPlaylistMessageId) {
 								try {
 									queue.textChannel.messages
@@ -889,7 +899,7 @@ module.exports = async (client, interaction) => {
 							}
 
 							await interaction
-								.update({ embeds: [embed], components: [] })
+								.update({ embeds: [embed], components: [Row] })
 								.catch((e) => {});
 						} catch (e) {
 							interaction
