@@ -80,12 +80,12 @@ module.exports = {
 				)
 				.setFooter({ text: 'Empire ❤️' });
 
-			const resumeButton = new ButtonBuilder()
-				.setCustomId('resume_button')
+			const resumesButton = new ButtonBuilder()
+				.setCustomId('resumes_button')
 				.setLabel('Resume')
 				.setStyle(ButtonStyle.Success);
 
-			const actionRow = new ActionRowBuilder().addComponents(resumeButton);
+			const actionRow = new ActionRowBuilder().addComponents(resumesButton);
 			await interaction.reply({
 				embeds: [embed],
 				components: [actionRow],
@@ -93,8 +93,26 @@ module.exports = {
 
 			// Handle button interaction
 			client.on('interactionCreate', async (interaction) => {
-				if (!interaction.isButton() || interaction.customId !== 'resume_button')
+				if (
+					!interaction.isButton() ||
+					interaction.customId !== 'resumes_button'
+				)
 					return;
+
+				if (!queue)
+					return interaction
+						.reply({
+							content: `${lang.msg63} <a:alert:1116984255755599884>`,
+							ephemeral: true,
+						})
+						.then(() => {
+							setTimeout(async () => {
+								await interaction
+									.deleteReply()
+									.catch((err) => console.error(err));
+							}, 5000); // 5 second
+						})
+						.catch((e) => {});
 
 				if (!interaction?.member?.voice?.channelId)
 					return interaction
@@ -133,13 +151,6 @@ module.exports = {
 					}
 				}
 
-				if (!queue)
-					return interaction
-						.reply({
-							content: `${lang.msg63} <a:alert:1116984255755599884>`,
-							ephemeral: true,
-						})
-						.catch((e) => {});
 				if (!queue.paused)
 					return interaction
 						.reply({ content: lang.msg132, ephemeral: true })
@@ -159,13 +170,13 @@ module.exports = {
 					.setFooter({ text: 'Empire ❤️' });
 
 				return interaction
-					.reply({ embeds: [embed], ephemeral: true })
+					.reply({ embeds: [embed] })
 					.then(() => {
 						setTimeout(async () => {
 							await interaction
 								.deleteReply()
 								.catch((err) => console.error(err));
-						}, 5000); // 5 second
+						}, 60000); // 60 second
 					})
 					.catch((e) => {});
 			});
