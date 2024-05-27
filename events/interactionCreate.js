@@ -586,12 +586,49 @@ module.exports = async (client, interaction) => {
 								autoplayButton
 							);
 
-							await interaction
+							const replyMessage = await interaction
 								.update({
 									embeds: [embed],
 									components: [actionRow, actionRow2, actionRow3],
 								})
 								.catch((e) => {});
+
+							// Wait until the music is playing again
+							const checkQueuePlaying = async () => {
+								while (!queue.playing) {
+									await new Promise((resolve) => setTimeout(resolve, 1000));
+								}
+
+								setTimeout(async () => {
+									const resumeEmbed = new EmbedBuilder()
+										.setColor('00FF7D')
+										.setThumbnail(queue.songs[0].thumbnail)
+										.setTimestamp()
+										.setDescription(
+											`**${queue.songs[0].name}**, ${lang.msg72} <a:Ceklis:1116989553744552007>`
+										)
+										.setFooter({ text: 'Empire ❤️' });
+
+									const pauseBtn = new ButtonBuilder()
+										.setCustomId('pause_button')
+										.setEmoji('⏸️')
+										.setStyle(ButtonStyle.Success);
+
+									const actionRowResume = new ActionRowBuilder().addComponents(
+										backBtn,
+										pauseBtn,
+										skipBtn
+									);
+									await replyMessage
+										.edit({
+											embeds: [resumeEmbed],
+											components: [actionRowResume, actionRow2, actionRow3],
+										})
+										.catch(console.error);
+								}, 1000); // Delay the second update by 1 second
+							};
+
+							checkQueuePlaying();
 						} catch (e) {
 							const queue = client.player.getQueue(interaction.guild.id);
 							if (!interaction?.member?.voice?.channelId)
@@ -704,12 +741,49 @@ module.exports = async (client, interaction) => {
 								autoplayButton
 							);
 
-							await interaction
+							const replyMessage = await interaction
 								.update({
 									embeds: [embed],
 									components: [actionRow, actionRow2, actionRow3],
 								})
 								.catch((e) => {});
+
+							// Wait until the music is playing again
+							const checkQueuePlaying = async () => {
+								while (!queue.playing) {
+									await new Promise((resolve) => setTimeout(resolve, 1000));
+								}
+
+								setTimeout(async () => {
+									const resumeEmbed = new EmbedBuilder()
+										.setColor('00FF7D')
+										.setThumbnail(queue.songs[0].thumbnail)
+										.setTimestamp()
+										.setDescription(
+											`**${queue.songs[0].name}**, ${lang.msg72} <a:Ceklis:1116989553744552007>`
+										)
+										.setFooter({ text: 'Empire ❤️' });
+
+									const pauseBtn = new ButtonBuilder()
+										.setCustomId('pause_button')
+										.setEmoji('⏸️')
+										.setStyle(ButtonStyle.Success);
+
+									const actionRowResume = new ActionRowBuilder().addComponents(
+										backBtn,
+										pauseBtn,
+										skipBtn
+									);
+									await replyMessage
+										.edit({
+											embeds: [resumeEmbed],
+											components: [actionRowResume, actionRow2, actionRow3],
+										})
+										.catch(console.error);
+								}, 1000); // Delay the second update by 1 second
+							};
+
+							checkQueuePlaying();
 						}
 						break;
 
@@ -911,6 +985,20 @@ module.exports = async (client, interaction) => {
 					case 'resume_button':
 						try {
 							const queue = client.player.getQueue(interaction.guild.id);
+
+							if (!queue)
+								return interaction
+									.reply({
+										content: `${lang.msg63} <a:alert:1116984255755599884>`,
+										ephemeral: true,
+									})
+									.catch((e) => {});
+
+							if (!queue.paused)
+								return interaction
+									.reply({ content: lang.msg132, ephemeral: true })
+									.catch((e) => {});
+
 							if (!interaction?.member?.voice?.channelId)
 								return interaction
 									?.reply({
@@ -948,13 +1036,7 @@ module.exports = async (client, interaction) => {
 										.catch((e) => {});
 								}
 							}
-							if (!queue)
-								return interaction
-									.reply({
-										content: `${lang.msg63} <a:alert:1116984255755599884>`,
-										ephemeral: true,
-									})
-									.catch((e) => {});
+
 							const success = queue.resume();
 							const successEmoji = '<a:Ceklis:1116989553744552007>';
 							const failureEmoji = '<a:Cross:1116983956227772476>';
@@ -1040,6 +1122,20 @@ module.exports = async (client, interaction) => {
 								.catch((e) => {});
 						} catch (e) {
 							const queue = client.player.getQueue(interaction.guild.id);
+
+							if (!queue)
+								return interaction
+									.reply({
+										content: `${lang.msg63} <a:alert:1116984255755599884>`,
+										ephemeral: true,
+									})
+									.catch((e) => {});
+
+							if (!queue.paused)
+								return interaction
+									.reply({ content: lang.msg132, ephemeral: true })
+									.catch((e) => {});
+
 							if (!interaction?.member?.voice?.channelId)
 								return interaction
 									?.reply({
@@ -1077,13 +1173,18 @@ module.exports = async (client, interaction) => {
 										.catch((e) => {});
 								}
 							}
+
+							const success = queue.resume();
 							const successEmoji = '<a:Ceklis:1116989553744552007>';
+							const failureEmoji = '<a:Cross:1116983956227772476>';
 							const embed = new EmbedBuilder()
 								.setColor('00FF7D')
 								.setThumbnail(queue.songs[0].thumbnail)
 								.setTimestamp()
 								.setDescription(
-									`**${queue.songs[0].name}**, ${lang.msg72}${successEmoji}`
+									success
+										? `**${queue.songs[0].name}**, ${lang.msg72}${successEmoji}`
+										: lang.msg71 + failureEmoji
 								)
 								.setFooter({ text: 'Empire ❤️' });
 
