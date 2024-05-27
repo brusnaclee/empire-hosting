@@ -19,6 +19,13 @@ module.exports = {
 						content: `${lang.msg63} <a:alert:1116984255755599884>`,
 						ephemeral: true,
 					})
+					.then(() => {
+						setTimeout(async () => {
+							await interaction
+								.deleteReply()
+								.catch((err) => console.error(err));
+						}, 5000); // 5 second
+					})
 					.catch((e) => {});
 
 			if (!interaction?.member?.voice?.channelId)
