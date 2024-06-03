@@ -3,7 +3,7 @@ const { ApplicationCommandOptionType, EmbedBuilder } = require('discord.js');
 
 module.exports = {
 	name: 'autoplay',
-	description: 'Toggle the autoplay of the queue.',
+	description: "Turn the queue's autoplay on or off.",
 	options: [],
 	permissions: '0x0000000000000800',
 	run: async (client, interaction) => {
