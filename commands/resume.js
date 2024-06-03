@@ -3,7 +3,7 @@ const { ApplicationCommandOptionType, EmbedBuilder } = require('discord.js');
 
 module.exports = {
 	name: 'resume',
-	description: 'Start paused music.',
+	description: 'Resume the paused music.',
 	permissions: '0x0000000000000800',
 	options: [],
 	voiceChannel: true,
