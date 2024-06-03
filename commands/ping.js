@@ -2,7 +2,7 @@ const { EmbedBuilder } = require('discord.js');
 const db = require('../mongoDB');
 module.exports = {
 	name: 'ping',
-	description: 'It helps you to get information about the speed of the bot.',
+	description: "It provides information about the bot's response time.",
 	permissions: '0x0000000000000800',
 	options: [],
 	run: async (client, interaction) => {
