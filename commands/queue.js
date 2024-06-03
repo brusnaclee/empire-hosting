@@ -7,7 +7,7 @@ const {
 const db = require('../mongoDB');
 module.exports = {
 	name: 'queue',
-	description: 'It shows you the playlist.',
+	description: 'It displays the list of songs in the queue.',
 	permissions: '0x0000000000000800',
 	options: [],
 	run: async (client, interaction) => {
