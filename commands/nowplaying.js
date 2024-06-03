@@ -8,7 +8,7 @@ const db = require('../mongoDB');
 
 module.exports = {
 	name: 'nowplaying',
-	description: 'Provides information about the music being played.',
+	description: 'Show details about the current music track.',
 	permissions: '0x0000000000000800',
 	options: [],
 	run: async (client, interaction) => {
