@@ -25,7 +25,7 @@ module.exports = {
 				await interaction.deferReply({ content: 'loading' });
 				const MODEL_NAME = 'gemini-pro';
 				const genAI = new GoogleGenerativeAI(
-					'AIzaSyDN9J5AioY5-99nvmbxJXwZ5vFVFsodIJE'
+					''
 				);
 				const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 				const generationConfig = {
