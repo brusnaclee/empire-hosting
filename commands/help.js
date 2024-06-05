@@ -116,6 +116,8 @@ owner name is: brusnaclee
 
 /stop - Stopping the music. Usage /stop
 
+/suggest - Suggest a song by AI. usage /suggest it need atleast 1 song to be played first to get the suggest from AI
+
 /suggestion - Send a suggestion to the developer. Usage /suggestion
 
 /time - Indicates which minute of the music you are playing. Usage /time
