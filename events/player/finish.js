@@ -87,15 +87,14 @@ module.exports = async (client, queue, oldState) => {
 	};
 	const parts = [
 		{
-			text: `i want you to search 5 music that still related to this data music has been played by a user
-            i want you to answer just like this
-            example
-            1. Without me - halsey
-            2. New genesis - ado
-            3. Everything goes on - Porter Robinson
-            and more until 5 music, i want you to answer just like that format, dont add something else except like that so remember just doing like that format until 5 songs, if can please dont recommend same music, but please recommend a song that is similar with the data or from same artist, also if can dont give 5 recommend song from same artist so the recommend song will be more varies .
-            here is the music data that has been played by user before
-            ${queue.songHistory10}
+			text: `I want you to find 5 songs that are related to this data, which contains music played by a user. 
+I want you to answer in this format:
+1. Without Me - Halsey
+2. New Genesis - Ado
+3. Everything Goes On - Porter Robinson
+and continue until you have 5 songs. Please recommend songs that are similar to the data or by the same artist. Avoid recommending 5 songs from the same artist to ensure variety.
+Here is the music data that has been played by the user before:
+${queue.songHistory10}
             `,
 		},
 	];
