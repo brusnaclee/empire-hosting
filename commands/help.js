@@ -1,6 +1,7 @@
 const { ApplicationCommandOptionType } = require('discord.js');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const db = require('../mongoDB');
+require('dotenv').config();
 module.exports = {
 	name: 'help',
 	description: 'It helps you to get information about bot and commands.',
@@ -25,7 +26,7 @@ module.exports = {
 				await interaction.deferReply({ content: 'loading' });
 				const MODEL_NAME = 'gemini-pro';
 				const genAI = new GoogleGenerativeAI(
-					''
+					'AIzaSyDN9J5AioY5-99nvmbxJXwZ5vFVFsodIJE'
 				);
 				const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 				const generationConfig = {
