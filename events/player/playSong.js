@@ -155,6 +155,16 @@ module.exports = async (client, queue, song, interaction) => {
 					queue.lastMessagesId.push(newMessage.id);
 				})
 				.catch(console.error);
+
+			if (!queue.songHistory10) {
+				queue.songHistory10 = [];
+			}
+
+			queue.songHistory10.push(song.name);
+
+			if (queue.songHistory10.length > 10) {
+				queue.songHistory10.shift(); // Hanya menyimpan 10 lagu terakhir
+			}
 		}
 	}
 
