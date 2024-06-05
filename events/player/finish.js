@@ -5,7 +5,8 @@ const {
 	ActionRowBuilder,
 	ButtonStyle,
 } = require('discord.js');
-const { lastSongMessageId } = require('./addSong.js');
+require('dotenv').config();
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 module.exports = async (client, queue, oldState) => {
 	let lang = await db?.musicbot?.findOne({
@@ -29,7 +30,7 @@ module.exports = async (client, queue, oldState) => {
 			})
 			.catch((e) => {});
 
-		/// Hapus pesan yang disimpan di queue.lastPlaylistMessageId
+		// Hapus pesan yang disimpan di queue.lastPlaylistMessageId
 		if (queue.lastPlaylistMessageId) {
 			try {
 				queue.textChannel.messages
@@ -59,7 +60,7 @@ module.exports = async (client, queue, oldState) => {
 			});
 		}
 
-		// Hapus semua pesan yang telah terkirim sebelumnya\
+		// Hapus semua pesan yang telah terkirim sebelumnya
 		if (queue.lastSongMessageId) {
 			queue.lastSongMessageId.forEach(async (messageId) => {
 				try {
@@ -72,18 +73,86 @@ module.exports = async (client, queue, oldState) => {
 		}
 	}
 
+	const MODEL_NAME = 'gemini-pro';
+
+	const genAI = new GoogleGenerativeAI(
+		'AIzaSyDN9J5AioY5-99nvmbxJXwZ5vFVFsodIJE'
+	);
+	const model = genAI.getGenerativeModel({ model: MODEL_NAME });
+	const generationConfig = {
+		temperature: 0.9,
+		topK: 1,
+		topP: 1,
+		maxOutputTokens: 2048,
+	};
+	const parts = [
+		{
+			text: `i want you to search 5 music that still related to this data music has been played by a user
+            i want you to answer just like this
+            example
+            1. Without me - halsey
+            2. New genesis - ado
+            3. Everything goes on - Porter Robinson
+            and more until 5 music, i want you to answer just like that format, dont add something else except like that so remember just doing like that format until 5 songs, if can please dont recommend same music, but please recommend a song that is similar with the data or from same artist, also if can dont give 5 recommend song from same artist so the recommend song will be more varies .
+            here is the music data that has been played by user before
+            ${queue.songHistory10}
+            `,
+		},
+	];
+	const result = await model.generateContent({
+		contents: [{ role: 'user', parts }],
+		generationConfig,
+	});
+	const reply = await result.response.text();
+
+	// Parse the reply using regex to extract song names
+	const regex = /\d+\.\s+(.+?)(?=\n|$)/g;
+	const matches = [];
+	let match;
+	while ((match = regex.exec(reply)) !== null) {
+		matches.push(match[1]);
+	}
+
+	if (matches.length === 0) {
+		console.error('No matches found in AI response.');
+		return;
+	}
+
+	// Create buttons for each song recommendation
+	const components = new ActionRowBuilder();
+	matches.forEach((song, index) => {
+		components.addComponents(
+			new ButtonBuilder()
+				.setCustomId(`play_song_${index + 1}`)
+				.setLabel(`Play song ${index + 1}`)
+				.setStyle(ButtonStyle.Primary)
+		);
+	});
+
+	// Send the recommendation message with buttons
+	const embed = new EmbedBuilder()
+		.setTitle(`Recommended Songs by Empire`)
+		.setDescription(`${reply}`)
+		.setColor(client.config.embedColor)
+		.setTimestamp();
+	queue?.textChannel
+		?.send({ embeds: [embed], components: [components] })
+		.then((message) => {
+			setTimeout(async () => {
+				message.delete().catch((err) => console.error(err));
+			}, 120000); // 60 seconds or 1 minute
+		})
+		.catch((e) => {});
+
 	const startTime = Date.now();
 
-	// Set interval timer untuk melakukan pengecekan setiap beberapa detik
+	// Set interval timer for checking the queue status
 	const interval = setInterval(async () => {
 		const queueCheck = client.player.getQueue(queue?.textChannel?.guild?.id);
 		if (!queueCheck || !queueCheck.playing) {
-			// Jika tidak ada lagu yang diputar
-			const elapsedTime = Date.now() - startTime; // Waktu yang telah berlalu sejak queue dimulai
-			const maxElapsedTime = 180000; // Durasi maksimum dalam milisecond (180 detik)
+			const elapsedTime = Date.now() - startTime;
+			const maxElapsedTime = 180000; // 180 seconds or 3 minutes
 			if (elapsedTime >= maxElapsedTime) {
-				// Jika waktu yang berlalu sudah mencapai durasi maksimum
-
 				const newEmbed = new EmbedBuilder()
 					.setColor('#FF0000')
 					.setTimestamp()
@@ -110,15 +179,13 @@ module.exports = async (client, queue, oldState) => {
 
 				const leaveOnEmpty = client.config.opt.voiceConfig.leaveOnEmpty?.status;
 				if (!leaveOnEmpty) {
-					clearInterval(interval); // Hentikan interval timer jika tidak perlu lagi
+					clearInterval(interval);
 					return;
 				}
-				// Hentikan pemutaran lagu dan keluar dari voice channel
 				queue.stop();
-				clearInterval(interval); // Hentikan interval timer setelah keluar
+				clearInterval(interval);
 			}
 		} else {
-			// Jika ada lagu yang diputar, hapus pesan sebelumnya jika ada
 			try {
 				queue.textChannel.messages
 					.fetch(queue.FinishMessageId)
@@ -134,7 +201,36 @@ module.exports = async (client, queue, oldState) => {
 					error
 				);
 			}
-			clearInterval(interval); // Hentikan interval timer jika lagu sudah diputar
+			clearInterval(interval);
 		}
-	}, 3000); // Set interval timer untuk berjalan setiap 3 detik
+	}, 3000); // Check every 3 seconds
+
+	// Listen for button interactions to play songs
+	client.on('interactionCreate', async (interaction) => {
+		if (!interaction.isButton()) return;
+
+		const buttonId = interaction.customId;
+		const songIndex = parseInt(buttonId.split('_')[2]) - 1;
+
+		if (!isNaN(songIndex) && matches[songIndex]) {
+			const songName = matches[songIndex];
+			try {
+				await client.player.play(interaction.member.voice.channel, songName, {
+					member: interaction.member,
+					textChannel: interaction.channel,
+					interaction,
+				});
+				await interaction.reply({
+					content: `${lang.msg61}: ${songName} <a:loading1:1149363140186882178>`,
+					ephemeral: true,
+				});
+			} catch (error) {
+				console.error('Error playing song:', error);
+				await interaction.reply({
+					content: 'Failed to play the song.',
+					ephemeral: true,
+				});
+			}
+		}
+	});
 };
