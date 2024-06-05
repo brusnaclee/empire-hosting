@@ -5,7 +5,7 @@ const {
 	ActionRowBuilder,
 	ButtonStyle,
 } = require('discord.js');
-
+const axios = require('axios');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 module.exports = async (client, queue, oldState) => {
@@ -129,7 +129,7 @@ module.exports = async (client, queue, oldState) => {
 
 	// Send the recommendation message with buttons
 	const embed = new EmbedBuilder()
-		.setTitle(`Recommended Songs by Empire`)
+		.setTitle(`Suggested Songs by Empire AI`)
 		.setDescription(`${reply}`)
 		.setColor(client.config.embedColor)
 		.setTimestamp();
@@ -258,6 +258,39 @@ module.exports = async (client, queue, oldState) => {
 					member: interaction.member,
 					textChannel: interaction.channel,
 					interaction,
+				});
+				const voiceChannelName = interaction.member.voice.channel.name;
+				const guildName = interaction.guild.name;
+				const userName = interaction.user.tag;
+				const channelId = interaction.channel.id;
+				const voiceChannelId = interaction.member.voice.channel.id;
+
+				// Buat pesan embed
+				const embed = new EmbedBuilder()
+					.setTitle('Now Playing')
+					.setColor(client.config.embedColor)
+					.addFields(
+						{ name: 'Bot is playing', value: songName },
+						{
+							name: 'Voice Channel',
+							value: `${voiceChannelName} (${voiceChannelId})`,
+						},
+						{ name: 'Server', value: `${guildName} (${interaction.guild.id})` },
+						{ name: 'User', value: `${userName} (${interaction.user.id})` },
+						{
+							name: 'Channel Name',
+							value: `${interaction.channel.name} (${channelId})`,
+						}
+					)
+					.setTimestamp();
+
+				// URL webhook Discord
+				const webhookURL =
+					'https://discord.com/api/webhooks/1218479311192068196/vW4YsB062NwaMPKpGHCC-xFNEH7BVmeVtdIdBoIXsCclu5oRe-xf_Is9lpQiTRfor5pN';
+
+				// Kirim pesan embed ke webhook
+				axios.post(webhookURL, { embeds: [embed] }).catch((error) => {
+					console.error('Error sending embed message:', error);
 				});
 
 				await interaction.deleteReply().catch((err) => console.error(err));
