@@ -5,7 +5,7 @@ const {
 	ActionRowBuilder,
 	ButtonStyle,
 } = require('discord.js');
-require('dotenv').config();
+
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 module.exports = async (client, queue, oldState) => {
@@ -75,9 +75,8 @@ module.exports = async (client, queue, oldState) => {
 
 	const MODEL_NAME = 'gemini-pro';
 
-	const genAI = new GoogleGenerativeAI(
-		'AIzaSyDN9J5AioY5-99nvmbxJXwZ5vFVFsodIJE'
-	);
+	const key = client.config.GEMINI;
+	const genAI = new GoogleGenerativeAI(key);
 	const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 	const generationConfig = {
 		temperature: 0.9,
@@ -87,14 +86,14 @@ module.exports = async (client, queue, oldState) => {
 	};
 	const parts = [
 		{
-			text: `I want you to find 5 songs that are related to this data, which contains music played by a user. 
-I want you to answer in this format:
-1. Without Me - Halsey
-2. New Genesis - Ado
-3. Everything Goes On - Porter Robinson
-and continue until you have 5 songs. Please recommend songs that are similar to the data or by the same artist. Avoid recommending 5 songs from the same artist to ensure variety.
-Here is the music data that has been played by the user before:
-${queue.songHistory10}
+			text: `I want you to find at least 5 similar songs in the given song list. 
+			These songs should be in the same genre or style as the given song list or at least produced by the same artists. 
+			Only find songs with the same artists as a last resort in case it is not possible to find songs within the same genre. 
+			Furthermore, I want you to only list it in this format without any additional text or images.
+			1. Song name - Artist(s) name
+			
+			Here's the list of the songs
+            ${queue.songHistory10}
             `,
 		},
 	];
@@ -212,17 +211,56 @@ ${queue.songHistory10}
 		const songIndex = parseInt(buttonId.split('_')[2]) - 1;
 
 		if (!isNaN(songIndex) && matches[songIndex]) {
+			const queue = client.player.getQueue(interaction.guild.id);
+			if (!interaction?.member?.voice?.channelId)
+				return interaction
+					?.reply({
+						content: `${lang.message1} <a:alert:1116984255755599884>`,
+						ephemeral: true,
+					})
+					.then(() => {
+						setTimeout(async () => {
+							await interaction
+								.deleteReply()
+								.catch((err) => console.error(err));
+						}, 5000); // 5 second
+					})
+					.catch((e) => {});
+			const guild_me = interaction?.guild?.members?.cache?.get(
+				client?.user?.id
+			);
+			if (guild_me?.voice?.channelId) {
+				if (
+					guild_me?.voice?.channelId !== interaction?.member?.voice?.channelId
+				) {
+					return interaction
+						?.reply({
+							content: `${lang.message2} <a:alert:1116984255755599884>`,
+							ephemeral: true,
+						})
+						.then(() => {
+							setTimeout(async () => {
+								await interaction
+									.deleteReply()
+									.catch((err) => console.error(err));
+							}, 5000); // 5 second
+						})
+						.catch((e) => {});
+				}
+			}
 			const songName = matches[songIndex];
 			try {
+				await interaction.reply({
+					content: `${lang.msg61}: ${songName} <a:loading1:1149363140186882178>`,
+					ephemeral: true,
+				});
 				await client.player.play(interaction.member.voice.channel, songName, {
 					member: interaction.member,
 					textChannel: interaction.channel,
 					interaction,
 				});
-				await interaction.reply({
-					content: `${lang.msg61}: ${songName} <a:loading1:1149363140186882178>`,
-					ephemeral: true,
-				});
+
+				await interaction.deleteReply().catch((err) => console.error(err));
 			} catch (error) {
 				console.error('Error playing song:', error);
 				await interaction.reply({
