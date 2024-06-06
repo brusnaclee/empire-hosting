@@ -138,12 +138,12 @@ module.exports = {
 				.setColor(client.config.embedColor)
 				.setTimestamp();
 
-			queue?.textChannel
-				?.send({ embeds: [embed], components: [components] })
-				.then((message) => {
+			interaction
+				.editReply({ embeds: [embed], components: [components] })
+				.then(() => {
 					setTimeout(async () => {
-						message.delete().catch((err) => console.error(err));
-					}, 120000); // 2 menit
+						await interaction.deleteReply().catch((err) => console.error(err));
+					}, 120000); // 5 detik
 				})
 				.catch((e) => {});
 
@@ -220,7 +220,7 @@ module.exports = {
 							.setTitle('Now Playing')
 							.setColor(client.config.embedColor)
 							.addFields(
-								{ name: 'Suggest AI is playing', value: songName },
+								{ name: 'Bot is playing', value: songName },
 								{
 									name: 'Voice Channel',
 									value: `${voiceChannelName} (${voiceChannelId})`,
