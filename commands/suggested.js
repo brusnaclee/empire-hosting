@@ -155,9 +155,15 @@ module.exports = {
 
 				if (!isNaN(songIndex) && matches[songIndex]) {
 					const queue = client.player.getQueue(interaction.guild.id);
+					await interaction.deferReply({
+
+				content: 'loading',
+
+			});
+
 					if (!interaction?.member?.voice?.channelId)
 						return interaction
-							.reply({
+							.editReply({
 								content: `${lang.message1} <a:alert:1116984255755599884>`,
 								ephemeral: true,
 							})
@@ -179,7 +185,7 @@ module.exports = {
 							interaction?.member?.voice?.channelId
 						) {
 							return interaction
-								.reply({
+								.editReply({
 									content: `${lang.message2} <a:alert:1116984255755599884>`,
 									ephemeral: true,
 								})
@@ -196,7 +202,7 @@ module.exports = {
 
 					const songName = matches[songIndex];
 					try {
-						await interaction.reply({
+						await interaction.editReply({
 							content: `${lang.msg61}: ${songName} <a:loading1:1149363140186882178>`,
 							ephemeral: true,
 						});
