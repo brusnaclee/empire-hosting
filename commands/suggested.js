@@ -1,4 +1,3 @@
-// suggest.js
 const {
 	EmbedBuilder,
 	ButtonBuilder,
@@ -138,127 +137,23 @@ module.exports = {
 				.setColor(client.config.embedColor)
 				.setTimestamp();
 
-			interaction
+			await interaction
 				.editReply({ embeds: [embed], components: [components] })
 				.then(() => {
 					setTimeout(async () => {
 						await interaction.deleteReply().catch((err) => console.error(err));
-					}, 120000); // 5 detik
+					}, 120000); // 2 menit
 				})
 				.catch((e) => {});
 
-			client.on('interactionCreate', async (interaction) => {
-				if (!interaction.isButton()) return;
+			client.once('interactionCreate', async (buttonInteraction) => {
+				if (!buttonInteraction.isButton()) return;
 
-				const buttonId = interaction.customId;
+				const buttonId = buttonInteraction.customId;
 				const songIndex = parseInt(buttonId.split('_')[2]) - 1;
 
 				if (!isNaN(songIndex) && matches[songIndex]) {
-					const queue = client.player.getQueue(interaction.guild.id);
-					await interaction.deferReply({
-
-				content: 'loading',
-
-			});
-
-					if (!interaction?.member?.voice?.channelId)
-						return interaction
-							.editReply({
-								content: `${lang.message1} <a:alert:1116984255755599884>`,
-								ephemeral: true,
-							})
-							.then(() => {
-								setTimeout(async () => {
-									await interaction
-										.deleteReply()
-										.catch((err) => console.error(err));
-								}, 5000); // 5 detik
-							})
-							.catch((e) => {});
-
-					const guild_me = interaction?.guild?.members?.cache?.get(
-						client?.user?.id
-					);
-					if (guild_me?.voice?.channelId) {
-						if (
-							guild_me?.voice?.channelId !==
-							interaction?.member?.voice?.channelId
-						) {
-							return interaction
-								.editReply({
-									content: `${lang.message2} <a:alert:1116984255755599884>`,
-									ephemeral: true,
-								})
-								.then(() => {
-									setTimeout(async () => {
-										await interaction
-											.deleteReply()
-											.catch((err) => console.error(err));
-									}, 5000); // 5 detik
-								})
-								.catch((e) => {});
-						}
-					}
-
-					const songName = matches[songIndex];
-					try {
-						await interaction.editReply({
-							content: `${lang.msg61}: ${songName} <a:loading1:1149363140186882178>`,
-							ephemeral: true,
-						});
-						await client.player.play(
-							interaction.member.voice.channel,
-							songName,
-							{
-								member: interaction.member,
-								textChannel: interaction.channel,
-								interaction,
-							}
-						);
-
-						const voiceChannelName = interaction.member.voice.channel.name;
-						const guildName = interaction.guild.name;
-						const userName = interaction.user.tag;
-						const channelId = interaction.channel.id;
-						const voiceChannelId = interaction.member.voice.channel.id;
-
-						const embed = new EmbedBuilder()
-							.setTitle('Now Playing')
-							.setColor(client.config.embedColor)
-							.addFields(
-								{ name: 'Suggest AI is playing', value: songName },
-								{
-									name: 'Voice Channel',
-									value: `${voiceChannelName} (${voiceChannelId})`,
-								},
-								{
-									name: 'Server',
-									value: `${guildName} (${interaction.guild.id})`,
-								},
-								{ name: 'User', value: `${userName} (${interaction.user.id})` },
-								{
-									name: 'Channel Name',
-									value: `${interaction.channel.name} (${channelId})`,
-								}
-							)
-							.setTimestamp();
-
-						const webhookURL =
-							'https://discord.com/api/webhooks/1218479311192068196/vW4YsB062NwaMPKpGHCC-xFNEH7BVmeVtdIdBoIXsCclu5oRe-xf_Is9lpQiTRfor5pN';
-
-						axios.post(webhookURL, { embeds: [embed] }).catch((error) => {
-							console.error('Error sending embed message:', error);
-						});
-
-						await interaction.deleteReply().catch((err) => console.error(err));
-					} catch (error) {
-						console.error('Error playing song:', error);
-						await interaction
-						.editReply({
-							content: 'Failed to play the song.',
-							ephemeral: true,
-						});
-					}
+					await handleButtonInteraction(buttonInteraction, songIndex, matches, client, lang);
 				}
 			});
 		} catch (e) {
@@ -272,3 +167,128 @@ module.exports = {
 		}
 	},
 };
+
+async function handleButtonInteraction(interaction, songIndex, matches, client, lang) {
+	try {
+		await interaction.deferReply({
+			content: 'loading',
+		});
+
+		if (!interaction?.member?.voice?.channelId)
+			return interaction
+				.editReply({
+					content: `${lang.message1} <a:alert:1116984255755599884>`,
+					ephemeral: true,
+				})
+				.then(() => {
+					setTimeout(async () => {
+						await interaction
+							.deleteReply()
+							.catch((err) => console.error(err));
+					}, 5000); // 5 detik
+				})
+				.catch((e) => {});
+
+		const guild_me = interaction?.guild?.members?.cache?.get(
+			client?.user?.id
+		);
+		if (guild_me?.voice?.channelId) {
+			if (
+				guild_me?.voice?.channelId !==
+				interaction?.member?.voice?.channelId
+			) {
+				return interaction
+					.editReply({
+						content: `${lang.message2} <a:alert:1116984255755599884>`,
+						ephemeral: true,
+					})
+					.then(() => {
+						setTimeout(async () => {
+							await interaction
+								.deleteReply()
+								.catch((err) => console.error(err));
+						}, 5000); // 5 detik
+					})
+					.catch((e) => {});
+			}
+		}
+
+		const songName = matches[songIndex];
+		try {
+			await interaction.editReply({
+				content: `${lang.msg61}: ${songName} <a:loading1:1149363140186882178>`,
+				ephemeral: true,
+			});
+			await client.player.play(
+				interaction.member.voice.channel,
+				songName,
+				{
+					member: interaction.member,
+					textChannel: interaction.channel,
+					interaction,
+				}
+			);
+
+			const voiceChannelName = interaction.member.voice.channel.name;
+			const guildName = interaction.guild.name;
+			const userName = interaction.user.tag;
+			const channelId = interaction.channel.id;
+			const voiceChannelId = interaction.member.voice.channel.id;
+
+			const embed = new EmbedBuilder()
+				.setTitle('Now Playing')
+				.setColor(client.config.embedColor)
+				.addFields(
+					{ name: 'Suggest AI is playing', value: songName },
+					{
+						name: 'Voice Channel',
+						value: `${voiceChannelName} (${voiceChannelId})`,
+					},
+					{
+							name: 'Server',
+							value: `${guildName} (${interaction.guild.id})`,
+						},
+						{ name: 'User', value: `${userName} (${interaction.user.id})` },
+						{
+							name: 'Channel Name',
+							value: `${interaction.channel.name} (${channelId})`,
+						}
+					)
+					.setTimestamp();
+
+			const webhookURL =
+				'https://discord.com/api/webhooks/1218479311192068196/vW4YsB062NwaMPKpGHCC-xFNEH7BVmeVtdIdBoIXsCclu5oRe-xf_Is9lpQiTRfor5pN';
+
+			axios.post(webhookURL, { embeds: [embed] }).catch((error) => {
+				console.error('Error sending embed message:', error);
+			});
+
+			await interaction.deleteReply().catch((err) => console.error(err));
+		} catch (error) {
+			console.error('Error playing song:', error);
+			await interaction
+				.editReply({
+					content: 'Failed to play the song.',
+					ephemeral: true,
+				})
+				.catch((err) => console.error(err));
+		}
+	} catch (error) {
+		console.error('Error handling button interaction:', error);
+		if (interaction.replied || interaction.deferred) {
+			await interaction
+				.editReply({
+					content: 'There was an error handling your request. Please try again.',
+					ephemeral: true,
+				})
+				.catch((err) => console.error(err));
+		} else {
+			await interaction
+				.reply({
+					content: 'There was an error handling your request. Please try again.',
+					ephemeral: true,
+				})
+				.catch((err) => console.error(err));
+		}
+	}
+}
