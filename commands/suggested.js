@@ -220,7 +220,7 @@ module.exports = {
 							.setTitle('Now Playing')
 							.setColor(client.config.embedColor)
 							.addFields(
-								{ name: 'Bot is playing', value: songName },
+								{ name: 'Suggest AI is playing', value: songName },
 								{
 									name: 'Voice Channel',
 									value: `${voiceChannelName} (${voiceChannelId})`,
