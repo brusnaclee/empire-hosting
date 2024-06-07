@@ -146,7 +146,7 @@ module.exports = {
 				})
 				.catch((e) => {});
 
-			client.once('interactionCreate', async (buttonInteraction) => {
+			client.on('interactionCreate', async (buttonInteraction) => {
 				if (!buttonInteraction.isButton()) return;
 
 				const buttonId = buttonInteraction.customId;
