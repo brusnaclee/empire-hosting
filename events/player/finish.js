@@ -90,16 +90,7 @@ module.exports = async (client, queue, oldState) => {
 			These songs should be in the same genre or style as the given song list or at least produced by the same artists. 
 			Only find songs with the same artists as a last resort in case it is not possible to find songs within the same genre. 
 			Furthermore, I want you to only list it in this format without any additional text or images.
-
 			1. Song name - Artist(s) name
-			
-			And please if can dont give the same song like the list, example if the list are like this
-			1. Baby - Justin Bieber
-			dont suggest same song, you can suggest song that is from the artist or with same genre or style like this the example
-			1. Stay - Justin Bieber
-
-			Also i dont want all of the 5 song is from same artist if the list of song is more then 1 songs so the name song that you give is more varies.
-			But if the song on the list only 1 song, then you can provide the suggest song from that artist only
 			
 			Here's the list of the songs
             ${queue.songHistory10}
