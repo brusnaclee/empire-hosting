@@ -247,7 +247,8 @@ module.exports = {
 						await interaction.deleteReply().catch((err) => console.error(err));
 					} catch (error) {
 						console.error('Error playing song:', error);
-						await interaction.reply({
+						await interaction
+						.editReply({
 							content: 'Failed to play the song.',
 							ephemeral: true,
 						});
