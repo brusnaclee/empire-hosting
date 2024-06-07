@@ -46,17 +46,19 @@ owner name is: brusnaclee
 
 /back - Plays the previous track. Usage = /back
 
-/channel add - Add a command usage channel. Usage = /channel add general
+/channel add - Add a command usage channel. Usage = /channel add (name channel)
 
-/channel remove - Remove a command usage channel. Usage = /channel remove general
+/channel remove - Remove a command usage channel. Usage = /channel remove (name channel)
 
 /clear - Clears the music queue. Usage = /clear
 
-/dj set - Allows you to select a DJ role by select the role example will set dj to @dj role. Usage /dj set member
+/dj set - Allows you to select a DJ role by select the role example will set dj to @dj role. Usage /dj set (name role)
 
 /dj reset - Allows you to turn off the DJ role. Usage /dj reset
 
 /download - Download music files. Usage /download
+
+/feedback - Send a feedback to the developer. Usage /feedback (give the feedback)
 
 /filter - Apply an audio filter to the current music. Usage /filter 
 
@@ -117,8 +119,6 @@ owner name is: brusnaclee
 /stop - Stopping the music. Usage /stop
 
 /suggest - Suggest a song by AI. usage /suggest it need atleast 1 song to be played first to get the suggest from AI
-
-/suggestion - Send a suggestion to the developer. Usage /suggestion
 
 /time - Indicates which minute of the music you are playing. Usage /time
 
