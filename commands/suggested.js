@@ -95,14 +95,32 @@ module.exports = {
 
 			const parts = [
 				{
-					text: `I want you to find at least 5 similar songs in the given song list. 
-			These songs should be in the same genre or style as the given song list or at least produced by the same artists. 
-			Only find songs with the same artists as a last resort in case it is not possible to find songs within the same genre. 
-			Furthermore, I want you to only list it in this format without any additional text or images.
-			1. Song name - Artist(s) name
+					text: `Please suggest at least 5 similar songs based on the given song list. 
+			The similar songs should be produced by the same bands or artists like on the given song list. 
+			List the suggestions in the following format without any additional text or images: 
 			
-			Here's the list of the songs
-            ${queue.songHistory10}`,
+			1. Song name - Artist(s) name 
+			
+			If there is only 1 song in the list, suggest songs by that same bands or artist. 
+			If there are multiple songs in the list (e.g., 2, 4, 6, 8, or 10 songs), suggest songs starting from the most recent song in the list and moving backward. 
+			For example, if there are 10 songs in the list, suggest songs starting from the 10th song first, then the 9th, and so on. 
+			You can choose 5 of the songs from the list and search for songs by their artists as a popular or last publish song.
+			Example
+			The list of the songs is like this:
+			1. New Genesis - Ado
+			2. STAY - Justin Bieber
+			3. Shelter - Porter Robinson
+			Then you should give suggest song based on the same bands or artist like this:
+			1. Backlight - Ado
+			2. Baby - Justin Bieber
+			3. Everything goes on - Porter Robinson
+			4. Tot Musica - Ado
+			5. Beauty and a Beat - Justin Bieber
+
+			Please don't suggest the same song again like on the given song list so the suggest song will be more varies from the same bands or artist like on the given song list
+
+			Here's the list of the songs: 
+			${queue.songHistory10}`,
 				},
 			];
 
