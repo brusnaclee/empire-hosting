@@ -95,11 +95,14 @@ module.exports = {
 
 			const parts = [
 				{
-					text: `I want you to find at least 5 similar songs in the given song list. These songs should be in the same genre or style as the given song list or at least produced by the same artists. Only find songs with the same artists as a last resort in case it is not possible to find songs within the same genre. Furthermore, I want you to only list it in this format without any additional text or images.
-                1. Song name - Artist(s) name
-                
-                Here's the list of the songs
-                ${queue.songHistory10}`,
+					text: `I want you to find at least 5 similar songs in the given song list. 
+			These songs should be in the same genre or style as the given song list or at least produced by the same artists. 
+			Only find songs with the same artists as a last resort in case it is not possible to find songs within the same genre. 
+			Furthermore, I want you to only list it in this format without any additional text or images.
+			1. Song name - Artist(s) name
+			
+			Here's the list of the songs
+            ${queue.songHistory10}`,
 				},
 			];
 
@@ -121,11 +124,13 @@ module.exports = {
 				return;
 			}
 
+			const uniqueId = Date.now().toString(); // Unique identifier
+
 			const components = new ActionRowBuilder();
 			matches.forEach((song, index) => {
 				components.addComponents(
 					new ButtonBuilder()
-						.setCustomId(`play_song_${index + 1}`)
+						.setCustomId(`play_song_${uniqueId}_${index + 1}`) // Include uniqueId in customId
 						.setLabel(`Play song ${index + 1}`)
 						.setStyle(ButtonStyle.Primary)
 				);
@@ -137,7 +142,7 @@ module.exports = {
 				.setColor(client.config.embedColor)
 				.setTimestamp();
 
-			await interaction
+			interaction
 				.editReply({ embeds: [embed], components: [components] })
 				.then(() => {
 					setTimeout(async () => {
@@ -150,10 +155,115 @@ module.exports = {
 				if (!buttonInteraction.isButton()) return;
 
 				const buttonId = buttonInteraction.customId;
-				const songIndex = parseInt(buttonId.split('_')[2]) - 1;
+				if (!buttonId.startsWith(`play_song_${uniqueId}_`)) return; // Ensure the button ID matches the current interaction
+
+				const songIndex = parseInt(buttonId.split('_')[3]) - 1;
 
 				if (!isNaN(songIndex) && matches[songIndex]) {
-					await handleButtonInteraction(buttonInteraction, songIndex, matches, client, lang);
+					const queue = client.player.getQueue(buttonInteraction.guild.id);
+					if (!buttonInteraction?.member?.voice?.channelId)
+						return buttonInteraction
+							.reply({
+								content: `${lang.message1} <a:alert:1116984255755599884>`,
+								ephemeral: true,
+							})
+							.then(() => {
+								setTimeout(async () => {
+									await buttonInteraction
+										.deleteReply()
+										.catch((err) => console.error(err));
+								}, 5000); // 5 detik
+							})
+							.catch((e) => {});
+
+					const guild_me = buttonInteraction?.guild?.members?.cache?.get(
+						client?.user?.id
+					);
+					if (guild_me?.voice?.channelId) {
+						if (
+							guild_me?.voice?.channelId !==
+							buttonInteraction?.member?.voice?.channelId
+						) {
+							return buttonInteraction
+								.reply({
+									content: `${lang.message2} <a:alert:1116984255755599884>`,
+									ephemeral: true,
+								})
+								.then(() => {
+									setTimeout(async () => {
+										await buttonInteraction
+											.deleteReply()
+											.catch((err) => console.error(err));
+									}, 5000); // 5 detik
+								})
+								.catch((e) => {});
+						}
+					}
+
+					const songName = matches[songIndex];
+					try {
+						await buttonInteraction.reply({
+							content: `${lang.msg61}: ${songName} <a:loading1:1149363140186882178>`,
+							ephemeral: true,
+						});
+						await client.player.play(
+							buttonInteraction.member.voice.channel,
+							songName,
+							{
+								member: buttonInteraction.member,
+								textChannel: buttonInteraction.channel,
+								interaction: buttonInteraction,
+							}
+						);
+
+						const voiceChannelName =
+							buttonInteraction.member.voice.channel.name;
+						const guildName = buttonInteraction.guild.name;
+						const userName = buttonInteraction.user.tag;
+						const channelId = buttonInteraction.channel.id;
+						const voiceChannelId = buttonInteraction.member.voice.channel.id;
+
+						const embed = new EmbedBuilder()
+							.setTitle('Now Playing')
+							.setColor(client.config.embedColor)
+							.addFields(
+								{ name: 'Bot is playing', value: songName },
+								{
+									name: 'Voice Channel',
+									value: `${voiceChannelName} (${voiceChannelId})`,
+								},
+								{
+									name: 'Server',
+									value: `${guildName} (${buttonInteraction.guild.id})`,
+								},
+								{
+									name: 'User',
+									value: `${userName} (${buttonInteraction.user.id})`,
+								},
+								{
+									name: 'Channel Name',
+									value: `${buttonInteraction.channel.name} (${channelId})`,
+								}
+							)
+							.setTimestamp();
+
+						const webhookURL =
+							'https://discord.com/api/webhooks/1218479311192068196/vW4YsB062NwaMPKpGHCC-xFNEH7BVmeVtdIdBoIXsCclu5oRe-xf_Is9lpQiTRfor5pN';
+
+						axios.post(webhookURL, { embeds: [embed] }).catch((error) => {
+							console.error('Error sending embed message:', error);
+						});
+
+						await buttonInteraction
+							.deleteReply()
+							.catch((err) => console.error(err));
+					} catch (error) {
+						console.error('Error playing song:', error);
+						await buttonInteraction.reply({
+							content: 'Failed to play the song.',
+							ephemeral: true,
+						});
+					}
 				}
 			});
 		} catch (e) {
@@ -167,128 +277,3 @@ module.exports = {
 		}
 	},
 };
-
-async function handleButtonInteraction(interaction, songIndex, matches, client, lang) {
-	try {
-		await interaction.deferReply({
-			content: 'loading',
-		});
-
-		if (!interaction?.member?.voice?.channelId)
-			return interaction
-				.editReply({
-					content: `${lang.message1} <a:alert:1116984255755599884>`,
-					ephemeral: true,
-				})
-				.then(() => {
-					setTimeout(async () => {
-						await interaction
-							.deleteReply()
-							.catch((err) => console.error(err));
-					}, 5000); // 5 detik
-				})
-				.catch((e) => {});
-
-		const guild_me = interaction?.guild?.members?.cache?.get(
-			client?.user?.id
-		);
-		if (guild_me?.voice?.channelId) {
-			if (
-				guild_me?.voice?.channelId !==
-				interaction?.member?.voice?.channelId
-			) {
-				return interaction
-					.editReply({
-						content: `${lang.message2} <a:alert:1116984255755599884>`,
-						ephemeral: true,
-					})
-					.then(() => {
-						setTimeout(async () => {
-							await interaction
-								.deleteReply()
-								.catch((err) => console.error(err));
-						}, 5000); // 5 detik
-					})
-					.catch((e) => {});
-			}
-		}
-
-		const songName = matches[songIndex];
-		try {
-			await interaction.editReply({
-				content: `${lang.msg61}: ${songName} <a:loading1:1149363140186882178>`,
-				ephemeral: true,
-			});
-			await client.player.play(
-				interaction.member.voice.channel,
-				songName,
-				{
-					member: interaction.member,
-					textChannel: interaction.channel,
-					interaction,
-				}
-			);
-
-			const voiceChannelName = interaction.member.voice.channel.name;
-			const guildName = interaction.guild.name;
-			const userName = interaction.user.tag;
-			const channelId = interaction.channel.id;
-			const voiceChannelId = interaction.member.voice.channel.id;
-
-			const embed = new EmbedBuilder()
-				.setTitle('Now Playing')
-				.setColor(client.config.embedColor)
-				.addFields(
-					{ name: 'Suggest AI is playing', value: songName },
-					{
-						name: 'Voice Channel',
-						value: `${voiceChannelName} (${voiceChannelId})`,
-					},
-					{
-							name: 'Server',
-							value: `${guildName} (${interaction.guild.id})`,
-						},
-						{ name: 'User', value: `${userName} (${interaction.user.id})` },
-						{
-							name: 'Channel Name',
-							value: `${interaction.channel.name} (${channelId})`,
-						}
-					)
-					.setTimestamp();
-
-			const webhookURL =
-				'https://discord.com/api/webhooks/1218479311192068196/vW4YsB062NwaMPKpGHCC-xFNEH7BVmeVtdIdBoIXsCclu5oRe-xf_Is9lpQiTRfor5pN';
-
-			axios.post(webhookURL, { embeds: [embed] }).catch((error) => {
-				console.error('Error sending embed message:', error);
-			});
-
-			await interaction.deleteReply().catch((err) => console.error(err));
-		} catch (error) {
-			console.error('Error playing song:', error);
-			await interaction
-				.editReply({
-					content: 'Failed to play the song.',
-					ephemeral: true,
-				})
-				.catch((err) => console.error(err));
-		}
-	} catch (error) {
-		console.error('Error handling button interaction:', error);
-		if (interaction.replied || interaction.deferred) {
-			await interaction
-				.editReply({
-					content: 'There was an error handling your request. Please try again.',
-					ephemeral: true,
-				})
-				.catch((err) => console.error(err));
-		} else {
-			await interaction
-				.reply({
-					content: 'There was an error handling your request. Please try again.',
-					ephemeral: true,
-				})
-				.catch((err) => console.error(err));
-		}
-	}
-}
