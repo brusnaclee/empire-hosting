@@ -160,10 +160,17 @@ module.exports = async (client, queue, song, interaction) => {
 				queue.songHistory10 = [];
 			}
 
-			queue.songHistory10.push(song.name);
+			// Add the new song to the history with numbering
+			queue.songHistory10.push(
+				`${queue.songHistory10.length + 1}. ${song.name}`
+			);
 
+			// Re-number the songs in the history
 			if (queue.songHistory10.length > 10) {
-				queue.songHistory10.shift(); // Hanya menyimpan 10 lagu terakhir
+				queue.songHistory10.shift(); // Only keep the last 10 songs
+				queue.songHistory10 = queue.songHistory10.map(
+					(song, index) => `${index + 1}. ${song.split('. ')[1]}`
+				);
 			}
 		}
 	}
