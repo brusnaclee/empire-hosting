@@ -116,12 +116,14 @@ module.exports = async (client, queue, oldState) => {
 		return;
 	}
 
+	const uniqueId = Date.now().toString(); // Unique identifier
+
 	// Create buttons for each song recommendation
 	const components = new ActionRowBuilder();
 	matches.forEach((song, index) => {
 		components.addComponents(
 			new ButtonBuilder()
-				.setCustomId(`play_song_${index + 1}`)
+				.setCustomId(`play_song_${uniqueId}_${index + 1}`) // Include uniqueId in customId
 				.setLabel(`Play song ${index + 1}`)
 				.setStyle(ButtonStyle.Primary)
 		);
@@ -138,7 +140,7 @@ module.exports = async (client, queue, oldState) => {
 		.then((message) => {
 			setTimeout(async () => {
 				message.delete().catch((err) => console.error(err));
-			}, 120000); // 60 seconds or 1 minute
+			}, 120000); // 2 minutes
 		})
 		.catch((e) => {});
 
@@ -208,7 +210,9 @@ module.exports = async (client, queue, oldState) => {
 		if (!interaction.isButton()) return;
 
 		const buttonId = interaction.customId;
-		const songIndex = parseInt(buttonId.split('_')[2]) - 1;
+		if (!buttonId.startsWith(`play_song_${uniqueId}_`)) return; // Ensure the button ID matches the current interaction
+
+		const songIndex = parseInt(buttonId.split('_')[3]) - 1;
 
 		if (!isNaN(songIndex) && matches[songIndex]) {
 			const queue = client.player.getQueue(interaction.guild.id);
@@ -270,7 +274,7 @@ module.exports = async (client, queue, oldState) => {
 					.setTitle('Now Playing')
 					.setColor(client.config.embedColor)
 					.addFields(
-						{ name: 'Suggest AI is playing', value: songName },
+						{ name: 'Bot is playing', value: songName },
 						{
 							name: 'Voice Channel',
 							value: `${voiceChannelName} (${voiceChannelId})`,
