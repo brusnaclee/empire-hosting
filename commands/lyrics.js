@@ -57,6 +57,18 @@ module.exports = {
 				title = queue.songs[0].name;
 			}
 
+			// Remove unwanted words and text within brackets from the title
+			const removeUnwantedWords = (str) => {
+				return str
+					.replace(
+						/\(.*?\)|\[.*?\]|\bofficial\b|\bofficial\b|\bmusic\b|\bvideo\b/gi,
+						''
+					)
+					.trim();
+			};
+
+			title = removeUnwantedWords(title);
+
 			const lyricsResponse = await axios.get(
 				'https://geniusempire.vercel.app/api/lyrics',
 				{ params: { title: title || ' ', artist: artist || ' ' } }
@@ -95,6 +107,9 @@ module.exports = {
 					}, 600000); // 600 seconds or 10 minutes
 				});
 		} catch (error) {
+			let lang = await db?.musicbot?.findOne({ guildID: interaction.guild.id });
+			lang = lang?.language || client.language;
+			lang = require(`../languages/${lang}.js`);
 			console.error(error);
 			if (error.code === 10062 || error.status === 404) {
 				return interaction
