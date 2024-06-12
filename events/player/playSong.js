@@ -221,6 +221,18 @@ module.exports = async (client, queue, song, interaction) => {
 						titles = queue.songs[0].name;
 					}
 
+					// Remove unwanted words and text within brackets from the title
+					const removeUnwantedWords = (str) => {
+						return str
+							.replace(
+								/\(.*?\)|\[.*?\]|\bofficial\b|\bofficial\b|\bmusic\b|\bvideo\b/gi,
+								''
+							)
+							.trim();
+					};
+
+					titles = removeUnwantedWords(titles);
+
 					const lyricsResponse = await axios.get(
 						'https://geniusempire.vercel.app/api/lyrics',
 						{ params: { title: titles || ' ', artist: artists || ' ' } }
