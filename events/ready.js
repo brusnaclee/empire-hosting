@@ -23,12 +23,63 @@ module.exports = async (client) => {
 		})();
 
 		console.log(client.user.username + lang.ready);
+		let totalMembers;
+
+		if (config.shardManager.shardStatus == true) {
+			const promises = [
+				client.shard.fetchClientValues('guilds.cache.size'),
+				client.shard.broadcastEval((c) =>
+					c.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0)
+				),
+				client.shard.broadcastEval((c) =>
+					c.guilds.cache.reduce(
+						(acc, guild) => acc + guild.channels.cache.size,
+						0
+					)
+				),
+				client.shard.broadcastEval((c) => c.voice?.adapters?.size || 0),
+			];
+			await Promise.all(promises).then((results) => {
+				totalGuilds = results[0].reduce(
+					(acc, guildCount) => acc + guildCount,
+					0
+				);
+				totalMembers = results[1].reduce(
+					(acc, memberCount) => acc + memberCount,
+					0
+				);
+				totalChannels = results[2].reduce(
+					(acc, channelCount) => acc + channelCount,
+					0
+				);
+				shardSize = client.shard.count;
+				voiceConnections = results[3].reduce(
+					(acc, voiceCount) => acc + voiceCount,
+					0
+				);
+			});
+		} else {
+			totalGuilds = client.guilds.cache.size;
+			totalMembers = client.guilds.cache.reduce(
+				(acc, guild) => acc + guild.memberCount,
+				0
+			);
+			totalChannels = client.guilds.cache.reduce(
+				(acc, guild) => acc + guild.channels.cache.size,
+				0
+			);
+			shardSize = 1;
+			voiceConnections = client?.voice?.adapters?.size || 0;
+		}
 
 		const activities = [
+			{ name: `With ${totalMembers} Users`, type: ActivityType.Listening },
+			{ name: `${config.status}`, type: ActivityType.Listening },
 			{ name: 'With AI', type: ActivityType.Playing },
 			{ name: `${config.status}`, type: ActivityType.Listening },
 			{ name: 'Anime', type: ActivityType.Watching },
 			{ name: `${config.status}`, type: ActivityType.Listening },
+
 			// Add more activities as desired
 		];
 
