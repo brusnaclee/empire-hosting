@@ -9,8 +9,8 @@ module.exports = {
 	permissions: '0x0000000000000800',
 	options: [
 		{
-			name: 'info',
-			description: 'The command you want to get information about.',
+			name: 'chatbot',
+			description: 'The command you want to get information to our Empire AI.',
 			type: ApplicationCommandOptionType.String,
 			required: false,
 		},
@@ -22,8 +22,8 @@ module.exports = {
 		lang = require(`../languages/${lang}.js`);
 		try {
 			const { EmbedBuilder } = require('discord.js');
-			const info = interaction.options.getString('info');
-			if (info) {
+			const chatbot = interaction.options.getString('chatbot');
+			if (chatbot) {
 				await interaction.deferReply({ content: 'loading' });
 				const MODEL_NAME = 'gemini-pro';
 				const key = client.config.GEMINI;
@@ -162,7 +162,7 @@ Empire commands information:
 
 /volume - Allows you to adjust the music volume. Usage /volume for show the volume, /volume (the value wanna change) /volume 100
 
-            Now this is the question from the <@${interaction.user.id}>: ${info}`,
+            Now this is the question from the <@${interaction.user.id}>: ${chatbot}`,
 					},
 				];
 				const result = await model.generateContent({
