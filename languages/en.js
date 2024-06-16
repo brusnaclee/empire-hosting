@@ -58,7 +58,7 @@ const language = {
 		
 		**Music Control Panel Button Instruction**
 
-		> ◀️ button for play the preveous music.
+		> ◀️ button for play the previous music.
 		> 
 		> ⏸️ button for pause the music.
 		> 
