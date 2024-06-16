@@ -1,6 +1,7 @@
 const { ApplicationCommandOptionType } = require('discord.js');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const db = require('../mongoDB');
+const config = require('../config.js');
 
 module.exports = {
 	name: 'help',
@@ -51,7 +52,31 @@ now version is 3.5.0
 last change is = adding AI on /help commands, suggest with AI
 last version was 3.0.0 with change is = add more language supports
 
-empire commands information:
+Empire Music Control Panel Button Instruction:
+
+The button will show up when there is music playing
+
+◀️ button for play the preveous music.
+
+⏸️ button for pause the music.
+
+⏯️ button for resume the music.
+
+▶️ button for skip the current music.
+
+📃 button for show the lyrics.
+
+⏹️ button for stop the music.
+
+<:save:1117815593043775569> button for save the music to your playlist.
+
+🔀 button for shuffle the music on the queue.
+
+<:download:1230868574722064446> button for download the music via gdrive.
+
+<:autoplay:1230869965435961394> button for turn the queue's autoplay on or off.
+
+Empire commands information:
 
 /help - It help you to get information about bot and commands. Usage = /help or /help (ask something)
 
@@ -158,7 +183,7 @@ empire commands information:
 							await interaction
 								.deleteReply()
 								.catch((err) => console.error(err));
-						}, 60000); // 60 seconds or 1 minutes
+						}, 120000); // 120 seconds or 2 minutes
 					})
 					.catch((e) => {});
 			} else {
@@ -166,18 +191,38 @@ empire commands information:
 
 				const embed = new EmbedBuilder()
 					.setColor(client.config.embedColor)
-					.setTitle('/help info <command>')
-					.setThumbnail(client.user.displayAvatarURL())
-					.setDescription(lang.msg32)
-					.addFields([
-						{
-							name: `${lang.msg33}`,
-							value: commands.map((x) => `\`/${x.name}\``).join(' | '),
-						},
-					])
+					.setAuthor({
+						name: `${client.user.username} Command List`,
+						iconURL: client.user.displayAvatarURL(),
+					})
+					.setDescription(
+						lang.msg32
+							.replace('{client.user.username}', `${client.user.username}`)
+							.replace('<@{interaction.user.id}>', `<@${interaction.user.id}>`)
+							.replace('{config.botInvite}', `${config.botInvite}`)
+							.replace('{config.supportServer}', `${config.supportServer}`)
+							.replace('{config.sponsor.url}', `${config.sponsor.url}`)
+							.replace(
+								'{config.voteManager.vote_url}',
+								`${config.voteManager.vote_url}`
+							)
+							.replace('{config.support}', `${config.support}`)
+							.replace('{config.support2}', `${config.support}`)
+					)
+
 					.setTimestamp()
 					.setFooter({ text: `Empire ❤️` });
-				interaction.reply({ embeds: [embed] }).catch((e) => {});
+
+				interaction
+					.reply({ embeds: [embed] })
+					.then(() => {
+						setTimeout(async () => {
+							await interaction
+								.deleteReply()
+								.catch((err) => console.error(err));
+						}, 180000); // 180 seconds or 3 minute
+					})
+					.catch((e) => {});
 			}
 		} catch (e) {
 			const errorNotifer = require('../functions.js');
