@@ -1,4 +1,4 @@
-const { ApplicationCommandOptionType } = require('discord.js');
+const { ApplicationCommandOptionType, EmbedBuilder } = require('discord.js');
 const db = require('../mongoDB');
 
 function getFormattedTime(seconds) {
@@ -49,13 +49,19 @@ module.exports = {
 			let formattedPosition = getFormattedTime(position);
 
 			queue.seek(position);
-			interaction
-				.reply({
-					content: `${lang.msg135.replace(
+			const embed = new EmbedBuilder()
+				.setColor('00FF7D')
+				.setTimestamp()
+				.setDescription(
+					`${lang.msg135.replace(
 						'{queue.formattedCurrentTime}',
 						formattedPosition
-					)}`,
-				})
+					)}`
+				)
+				.setFooter({ text: `Empire ❤️` });
+
+			interaction
+				.reply({ embeds: [embed] })
 				.then(() => {
 					setTimeout(async () => {
 						await interaction.deleteReply().catch((err) => console.error(err));
