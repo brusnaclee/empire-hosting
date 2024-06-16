@@ -7,6 +7,7 @@ module.exports = {
 	botInvite:
 		'https://discord.com/oauth2/authorize?client_id=1044063413833302108&permissions=414585318465&scope=bot+applications.commands', //write your discord bot invite.
 	supportServer: 'https://empire.is-great.net/', //write your discord bot support server invite.
+	support: 'https://discord.gg/5fQ25DtVeH',
 	mongodbURL: 'mongodb+srv://brusnaclee:2234@empire.kbvvoal.mongodb.net/', //write your mongodb url.
 	status: 'your music ❤️🎶❤️ ',
 	commandsDir: './commands', //Please don't touch
