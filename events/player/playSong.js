@@ -15,7 +15,6 @@ module.exports = async (client, queue, song, interaction) => {
 	lang = require(`../../languages/${lang}.js`);
 
 	if (queue) {
-		if (!client.config.opt.loopMessage && queue?.repeatMode !== 0) return;
 		if (queue?.textChannel) {
 			const embed = new EmbedBuilder();
 			embed.setColor(client.config.embedColor);
