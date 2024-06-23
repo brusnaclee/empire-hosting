@@ -387,6 +387,126 @@ module.exports = async (client, interaction) => {
 						}
 					}
 
+					case 'lyric_button':
+						try {
+							const axios = require('axios');
+							const songNames = '';
+							const artistNames = '';
+							const queue = client.player.getQueue(interaction.guild.id);
+							await interaction.deferReply({
+								content: 'loading',
+								ephemeral: true,
+							});
+
+							let titles = '';
+							let artists = typeof artistNames === 'string' ? artistNames : ' ';
+							if (songNames) {
+								// If the song name is provided, use that song
+								title = songNames;
+							} else {
+								// If the song name is not provided, use the currently playing song
+								if (!queue || !queue.playing) {
+									return interaction
+										.editReply({
+											content: `${lang.msg5} <a:alert:1116984255755599884>`,
+											ephemeral: true,
+										})
+										.then(() => {
+											setTimeout(async () => {
+												await interaction
+													.deleteReply()
+													.catch((err) => console.error(err));
+											}, 5000); // 60 seconds or 1 minutes
+										});
+								}
+								titles = queue.songs[0].name;
+							}
+
+							// Remove unwanted words and text within brackets from the title
+							const removeUnwantedWords = (str) => {
+								return str
+									.replace(
+										/\(.*?\)|\[.*?\]|\bofficial\b|\bofficial\b|\bmusic\b|\bvideo\b/gi,
+										''
+									)
+									.trim();
+							};
+
+							titles = removeUnwantedWords(titles);
+
+							const lyricsResponse = await axios.get(
+								'https://geniusempire.vercel.app/api/lyrics',
+								{ params: { title: titles || ' ', artist: artists || ' ' } }
+							);
+							const lirik = lyricsResponse.data.lyrics;
+							// Defer reply with ephemeral set to true
+
+							if (lyricsResponse.status === 404) {
+								return interaction
+									.editReply({
+										content: 'Lyrics for this song were not found.',
+										ephemeral: true,
+									})
+									.then(() => {
+										setTimeout(async () => {
+											await interaction
+												.deleteReply()
+												.catch((err) => console.error(err));
+										}, 60000); // 60 seconds or 1 minutes
+									});
+							}
+
+							const embed = new EmbedBuilder()
+								.setColor(client.config.embedColor)
+								.setTitle(titles)
+								.setDescription(lirik)
+								.setTimestamp()
+								.setFooter({ text: 'Empire ❤️' });
+
+							// Edit the reply with ephemeral set to false
+							await interaction
+								.editReply({ embeds: [embed], ephemeral: true })
+								.then(() => {
+									setTimeout(async () => {
+										await interaction
+											.deleteReply()
+											.catch((err) => console.error(err));
+									}, 600000); // 600 seconds or 10 minutes
+								});
+						} catch (error) {
+							let lang = await db?.musicbot?.findOne({
+								guildID: interaction.guild.id,
+							});
+							lang = lang?.language || client.language;
+							lang = require(`../languages/${lang}.js`);
+							console.error(error);
+							if (error.code === 10062 || error.status === 404) {
+								return interaction
+									.editReply({ content: lang.msg4, ephemeral: true })
+									.then(() => {
+										setTimeout(async () => {
+											await interaction
+												.deleteReply()
+												.catch((err) => console.error(err));
+										}, 60000); // 60 seconds or 1 minutes
+									});
+							}
+							interaction
+								.editReply({
+									content: 'An error occurred while processing the request.',
+									ephemeral: true,
+								})
+								.then(() => {
+									setTimeout(async () => {
+										await interaction
+											.deleteReply()
+											.catch((err) => console.error(err));
+									}, 60000); // 60 seconds or 1 minutes
+								});
+						}
+
+						break;
+
 					case 'back_button':
 						try {
 							const queue = client.player.getQueue(interaction.guild.id);
