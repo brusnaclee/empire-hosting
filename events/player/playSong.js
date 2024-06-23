@@ -15,6 +15,7 @@ module.exports = async (client, queue, song, interaction) => {
 	lang = require(`../../languages/${lang}.js`);
 
 	if (queue) {
+		if (!client.config.opt.loopMessage && queue?.repeatMode !== 0) return;
 		if (queue?.textChannel) {
 			const embed = new EmbedBuilder();
 			embed.setColor(client.config.embedColor);
@@ -173,109 +174,4 @@ module.exports = async (client, queue, song, interaction) => {
 			}
 		}
 	}
-
-	// Event listener untuk menangani interaksi tombol
-	client.on('interactionCreate', async (interaction) => {
-		if (!interaction.isButton()) return;
-
-		const queue = client.player.getQueue(interaction.guild.id);
-		if (!queue) return;
-
-		const buttonId = interaction.customId;
-		switch (buttonId) {
-			case 'lyric_button':
-				try {
-					let lang = await db?.musicbot?.findOne({
-						guildID: interaction.guild.id,
-					});
-					lang = lang?.language || client.language;
-					lang = require(`../../languages/${lang}.js`);
-
-					const songNames = '';
-					const artistNames = '';
-					const queue = client.player.getQueue(interaction.guild.id);
-					await interaction.deferReply({ content: 'loading', ephemeral: true });
-
-					let titles = '';
-					let artists = typeof artistNames === 'string' ? artistNames : ' ';
-					if (songNames) {
-						// If the song name is provided, use that song
-						title = songNames;
-					} else {
-						// If the song name is not provided, use the currently playing song
-						if (!queue || !queue.playing) {
-							return interaction
-								.editReply({
-									content: `${lang.msg5} <a:alert:1116984255755599884>`,
-									ephemeral: true,
-								})
-								.then(() => {
-									setTimeout(async () => {
-										await interaction
-											.deleteReply()
-											.catch((err) => console.error(err));
-									}, 5000); // 60 seconds or 1 minutes
-								});
-						}
-						titles = queue.songs[0].name;
-					}
-
-					// Remove unwanted words and text within brackets from the title
-					const removeUnwantedWords = (str) => {
-						return str
-							.replace(
-								/\(.*?\)|\[.*?\]|\bofficial\b|\bofficial\b|\bmusic\b|\bvideo\b/gi,
-								''
-							)
-							.trim();
-					};
-
-					titles = removeUnwantedWords(titles);
-
-					const lyricsResponse = await axios.get(
-						'https://geniusempire.vercel.app/api/lyrics',
-						{ params: { title: titles || ' ', artist: artists || ' ' } }
-					);
-					const lirik = lyricsResponse.data.lyrics;
-					// Defer reply with ephemeral set to true
-
-					if (lyricsResponse.status === 404) {
-						return interaction
-							.editReply({
-								content: 'Lyrics for this song were not found.',
-								ephemeral: true,
-							})
-							.then(() => {
-								setTimeout(async () => {
-									await interaction
-										.deleteReply()
-										.catch((err) => console.error(err));
-								}, 60000); // 60 seconds or 1 minutes
-							});
-					}
-
-					const embed = new EmbedBuilder()
-						.setColor(client.config.embedColor)
-						.setTitle(titles)
-						.setDescription(lirik)
-						.setTimestamp()
-						.setFooter({ text: 'Empire ❤️' });
-
-					// Edit the reply with ephemeral set to false
-					await interaction
-						.editReply({ embeds: [embed], ephemeral: true })
-						.then(() => {
-							setTimeout(async () => {
-								await interaction
-									.deleteReply()
-									.catch((err) => console.error(err));
-							}, 600000); // 600 seconds or 10 minutes
-						});
-				} catch (error) {}
-				break;
-
-			default:
-				break;
-		}
-	});
 };
