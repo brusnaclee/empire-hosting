@@ -422,11 +422,10 @@ module.exports = async (client, interaction) => {
 								titles = queue.songs[0].name;
 							}
 
-							// Remove unwanted words and text within brackets from the title
 							const removeUnwantedWords = (str) => {
 								return str
 									.replace(
-										/\(.*?\)|\[.*?\]|\bofficial\b|\bofficial\b|\bmusic\b|\bvideo\b/gi,
+										/\(.*?\)|\[.*?\]|\bofficial\b|\bmusic\b|\bvideo\b|\blive\b|\blyrics\b|\bHD\b|\bfull\b|\bnew\b|\bMV\b|\bmv\b|['.,":;]/gi,
 										''
 									)
 									.trim();
