@@ -425,9 +425,10 @@ module.exports = async (client, interaction) => {
 							const removeUnwantedWords = (str) => {
 								return str
 									.replace(
-										/\(.*?\)|\[.*?\]|\bofficial\b|\bmusic\b|\bvideo\b|\blive\b|\blyrics\b|\bHD\b|\bfull\b|\bnew\b|\bMV\b|\bmv\b|['.,":;]/gi,
+										/\(.*?\)|\[.*?\]|\bofficial\b|\bmusic\b|\bvideo\b|\blive\b|\blyrics\b|\bHD\b|\bfull\b|\bnew\b|\bMV\b|\bmv\b|\bcover\b|\bremix\b|['.,":;\/\\|\[\]()]/gi, // Menambahkan unwanted words dan simbol
 										''
 									)
+									.replace(/\bft\.?.*$/i, '') // Menghapus semua karakter setelah ft.
 									.trim();
 							};
 
