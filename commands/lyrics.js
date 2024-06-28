@@ -60,10 +60,10 @@ module.exports = {
 			const removeUnwantedWords = (str) => {
 				return str
 					.replace(
-						/\(.*?\)|\[.*?\]|\bofficial\b|\bmusic\b|\bvideo\b|\blive\b|\blyrics\b|\bHD\b|\bfull\b|\bnew\b|\bMV\b|\bmv\b|\bcover\b|\bremix\b|['.,":;\/\\|\[\]()]/gi, // Menambahkan unwanted words dan simbol
+						/\(.*?\)|\[.*?\]|\bofficial\b|\bmusic\b|\bvideo\b|\blive\b|\blyrics\b|\blyric\b|\blirik\b|\bHD\b|\bfull\b|\bnew\b|\bMV\b|\bmv\b|\bcover\b|\bremix\b|['.,":;\/\\|\[\]()]/gi, // Menambahkan unwanted words dan simbol
 						''
 					)
-					.replace(/\bft\.?.*$/i, '') // Menghapus semua karakter setelah ft.
+					.replace(/\bft\.?.*$/i, '')
 					.trim();
 			};
 
@@ -87,7 +87,7 @@ module.exports = {
 							await interaction
 								.deleteReply()
 								.catch((err) => console.error(err));
-						}, 60000); // 60 seconds or 1 minutes
+						}, 20000); // 60 seconds or 1 minutes
 					});
 			}
 
@@ -110,7 +110,47 @@ module.exports = {
 			let lang = await db?.musicbot?.findOne({ guildID: interaction.guild.id });
 			lang = lang?.language || client.language;
 			lang = require(`../languages/${lang}.js`);
-			console.error(error);
+
+			const songName = interaction.options.getString('song');
+			const artistName = interaction.options.getString('artists');
+			const queue = client.player.getQueue(interaction.guild.id);
+
+			let title = '';
+			let artist = typeof artistName === 'string' ? artistName : ' ';
+			if (songName) {
+				// If the song name is provided, use that song
+				title = songName;
+			} else {
+				// If the song name is not provided, use the currently playing song
+				if (!queue || !queue.playing) {
+					return interaction
+						.editReply({
+							content: `${lang.msg5} <a:alert:1116984255755599884>`,
+							ephemeral: true,
+						})
+						.then(() => {
+							setTimeout(async () => {
+								await interaction
+									.deleteReply()
+									.catch((err) => console.error(err));
+							}, 5000);
+						});
+				}
+				title = queue.songs[0].name;
+			}
+
+			const removeUnwantedWords = (str) => {
+				return str
+					.replace(
+						/\(.*?\)|\[.*?\]|\bofficial\b|\bmusic\b|\bvideo\b|\blive\b|\blyrics\b|\blyric\b|\blirik\b|\bHD\b|\bfull\b|\bnew\b|\bMV\b|\bmv\b|\bcover\b|\bremix\b|['.,":;\/\\|\[\]()]/gi, // Menambahkan unwanted words dan simbol
+						''
+					)
+					.replace(/\bft\.?.*$/i, '')
+					.trim();
+			};
+
+			title = removeUnwantedWords(title);
+
 			if (error.code === 10062 || error.status === 404) {
 				return interaction
 					.editReply({ content: lang.msg4, ephemeral: true })
@@ -119,19 +159,83 @@ module.exports = {
 							await interaction
 								.deleteReply()
 								.catch((err) => console.error(err));
-						}, 60000); // 60 seconds or 1 minutes
+						}, 10000);
 					});
 			}
-			interaction
-				.editReply({
-					content: 'An error occurred while processing the request.',
-					ephemeral: true,
-				})
-				.then(() => {
-					setTimeout(async () => {
-						await interaction.deleteReply().catch((err) => console.error(err));
-					}, 60000); // 60 seconds or 1 minutes
-				});
+			interaction.editReply({
+				content:
+					'The song is not available in the database, attempting to search with AI. <a:loading1:1149363140186882178>',
+				ephemeral: true,
+			});
+
+			const url = 'https://gemini-empire.vercel.app/api/chatbot';
+			const data = {
+				prompt: `
+Could you give me full lyric of this song
+song name: ${title} ${artist}`,
+			};
+
+			const maxRetries = 5;
+			let attempts = 0;
+
+			const makeRequest = () => {
+				axios
+					.post(url, data)
+					.then((response) => {
+						const result = response.data;
+						// Send the recommendation message with buttons
+						const embed = new EmbedBuilder()
+							.setTitle(`${title}`)
+							.setDescription(`${result}`)
+							.setColor(client.config.embedColor)
+							.setTimestamp();
+
+						interaction
+							.editReply({ embeds: [embed], ephemeral: false })
+							.then(() => {
+								setTimeout(async () => {
+									await interaction
+										.deleteReply()
+										.catch((err) => console.error(err));
+								}, 600000); // 600 seconds or 10 minutes
+							})
+							.catch((e) => {});
+					})
+					.catch((error) => {
+						attempts++;
+						if (attempts < maxRetries) {
+							makeRequest();
+						} else {
+							if (error.code === 10062 || error.status === 404) {
+								return interaction
+									.editReply({ content: lang.msg4, ephemeral: true })
+									.then(() => {
+										setTimeout(async () => {
+											await interaction
+												.deleteReply()
+												.catch((err) => console.error(err));
+										}, 10000);
+									});
+							}
+							interaction
+								.editReply({
+									content: 'An error occurred while processing the request.',
+									ephemeral: true,
+								})
+								.then(() => {
+									setTimeout(async () => {
+										await interaction
+											.deleteReply()
+											.catch((err) => console.error(err));
+									}, 10000);
+								});
+							console.error('Error making the request:', error);
+						}
+					});
+			};
+
+			// Initial call to makeRequest
+			makeRequest();
 		}
 	},
 };
