@@ -117,6 +117,74 @@ module.exports = async (client, queue, oldState) => {
 
 			if (matches.length === 0) {
 				console.error('No matches found in AI response.');
+				const startTime = Date.now();
+
+				// Set interval timer for checking the queue status
+				const interval = setInterval(async () => {
+					const queueCheck = client.player.getQueue(
+						queue?.textChannel?.guild?.id
+					);
+					if (!queueCheck || !queueCheck.playing) {
+						const elapsedTime = Date.now() - startTime;
+						const maxElapsedTime = 180000; // 180 seconds or 3 minutes
+						if (elapsedTime >= maxElapsedTime) {
+							const newEmbed = new EmbedBuilder()
+								.setColor('#FF0000')
+								.setTimestamp()
+								.setDescription(
+									`${lang.msg148} <a:Thankyou:1117120334810857623>`
+								)
+								.setFooter({ text: `Empire ❤️` });
+
+							const linkvote = new ButtonBuilder()
+								.setLabel('Vote Us!')
+								.setURL('https://top.gg/bot/1044063413833302108/vote')
+								.setStyle(ButtonStyle.Link);
+
+							const linkinvite = new ButtonBuilder()
+								.setLabel('Invite Us!')
+								.setURL(
+									'https://discord.com/oauth2/authorize?client_id=1044063413833302108&permissions=414585318465&scope=bot+applications.commands'
+								)
+								.setStyle(ButtonStyle.Link);
+
+							const Row = new ActionRowBuilder().addComponents(
+								linkvote,
+								linkinvite
+							);
+
+							queue?.textChannel
+								?.send({ embeds: [newEmbed], components: [Row] })
+								.catch(console.error);
+
+							const leaveOnEmpty =
+								client.config.opt.voiceConfig.leaveOnEmpty?.status;
+							if (!leaveOnEmpty) {
+								clearInterval(interval);
+								return;
+							}
+							queue.stop();
+							clearInterval(interval);
+						}
+					} else {
+						try {
+							queue.textChannel.messages
+								.fetch(queue.FinishMessageId)
+								.then((message) => {
+									if (message) {
+										message.delete().catch(console.error);
+									}
+								})
+								.catch(console.error);
+						} catch (error) {
+							console.error(
+								'Gagal menghapus pesan dari queue.FinishMessageId:',
+								error
+							);
+						}
+						clearInterval(interval);
+					}
+				}, 3000); // Check every 3 seconds
 				return;
 			}
 
