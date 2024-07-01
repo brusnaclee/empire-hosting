@@ -146,6 +146,7 @@ module.exports = {
 						''
 					)
 					.replace(/\bft\.?.*$/i, '')
+					.replace(/\bby\b.*$/i, '')
 					.trim();
 			};
 
