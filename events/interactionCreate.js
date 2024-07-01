@@ -516,6 +516,7 @@ module.exports = async (client, interaction) => {
 										''
 									)
 									.replace(/\bft\.?.*$/i, '')
+									.replace(/\bby\b.*$/i, '')
 									.trim();
 							};
 
