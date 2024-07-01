@@ -60,7 +60,7 @@ module.exports = {
 			const removeUnwantedWords = (str) => {
 				return str
 					.replace(
-						/\(.*?\)|\[.*?\]|\bofficial\b|\bmusic\b|\bvideo\b|\blive\b|\blyrics\b|\blyric\b|\blirik\b|\bHD\b|\bfull\b|\bnew\b|\bMV\b|\bmv\b|\bcover\b|\bremix\b|['.,":;\/\\|\[\]()]/gi, // Menambahkan unwanted words dan simbol
+						/\(.*?\)|\[.*?\]|\bofficial\b|\bmusic\b|\bvideo\b|\blive\b|\blyrics\b|\blyric\b|\blirik\b|\bHD\b|\bversion\b|\bfull\b|\bnew\b|\bMV\b|\bmv\b|\bcover\b|\bremix\b|\bfeat\b|\bft\b|\bfeaturing\b|\bver\b|\bversion\b|\bedit\b|\bclip\b|\bteaser\b|\btrailer\b|\bofficial audio\b|\bperformance\b|\bconcert\b|\bkaraoke\b|\btour\b|\bremastered\b|\bremake\b|\bintro\b|\boutro\b|\bvisualizer\b|\bvisual\b|\btrack\b|\bcensored\b|['.,":;\/\\|\[\]()]/gi, // Menambahkan unwanted words dan simbol
 						''
 					)
 					.replace(/\bft\.?.*$/i, '')
@@ -143,7 +143,7 @@ module.exports = {
 			const removeUnwantedWords = (str) => {
 				return str
 					.replace(
-						/\(.*?\)|\[.*?\]|\bofficial\b|\bmusic\b|\bvideo\b|\blive\b|\blyrics\b|\blyric\b|\blirik\b|\bHD\b|\bfull\b|\bnew\b|\bMV\b|\bmv\b|\bcover\b|\bremix\b|['.,":;\/\\|\[\]()]/gi, // Menambahkan unwanted words dan simbol
+						/\(.*?\)|\[.*?\]|\bofficial\b|\bmusic\b|\bvideo\b|\blive\b|\blyrics\b|\blyric\b|\blirik\b|\bHD\b|\bversion\b|\bfull\b|\bnew\b|\bMV\b|\bmv\b|\bcover\b|\bremix\b|\bfeat\b|\bft\b|\bfeaturing\b|\bver\b|\bversion\b|\bedit\b|\bclip\b|\bteaser\b|\btrailer\b|\bofficial audio\b|\bperformance\b|\bconcert\b|\bkaraoke\b|\btour\b|\bremastered\b|\bremake\b|\bintro\b|\boutro\b|\bvisualizer\b|\bvisual\b|\btrack\b|\bcensored\b|['.,":;\/\\|\[\]()]/gi, // Menambahkan unwanted words dan simbol
 						''
 					)
 					.replace(/\bft\.?.*$/i, '')
