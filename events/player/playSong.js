@@ -160,9 +160,26 @@ module.exports = async (client, queue, song, interaction) => {
 				queue.songHistory10 = [];
 			}
 
+			let title = song.name;
+
+			const removeUnwantedWords = (str) => {
+				return str
+					.replace(
+						/\(.*?\)|\[.*?\]|\bofficial\b|\bmusic\b|\bvideo\b|\blive\b|\blyrics\b|\blyric\b|\blirik\b|\bHD\b|\bversion\b|\bfull\b|\bMV\b|\bmv\b|\bcover\b|\bremix\b|\bfeaturing\b|\bver\b|\bversion\b|\bedit\b|\bclip\b|\bteaser\b|\btrailer\b|\bofficial audio\b|\bperformance\b|\bconcert\b|\bkaraoke\b|\btour\b|\bremastered\b|\bremake\b|\bintro\b|\boutro\b|\bvisualizer\b|\bvisual\b|\btrack\b|\bcensored\b|['.,":;\/\[\]()]/gi, // Menambahkan unwanted words dan simbol
+						''
+					)
+					.replace(/\bft\.?.*$/i, '')
+					.replace(/\bfeat\.?.*$/i, '')
+					.replace(/\bby\b.*$/i, '')
+					.replace(/\|.*$/g, '') // Menambahkan regex untuk menghapus semua kata setelah |
+					.trim();
+			};
+
+			title = removeUnwantedWords(title);
+
 			// Add the new song to the history with numbering
 			queue.songHistory10.push(
-				`${queue.songHistory10.length + 1}. ${song.name}`
+				`${queue.songHistory10.length + 1}. ${title} - ${song.uploader.name}`
 			);
 
 			// Re-number the songs in the history
