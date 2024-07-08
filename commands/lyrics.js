@@ -181,7 +181,7 @@ Could you give me full lyric of this song
 song name: ${title} ${artist}`,
 			};
 
-			const maxRetries = 5;
+			const maxRetries = 2;
 			let attempts = 0;
 
 			const makeRequest = () => {
