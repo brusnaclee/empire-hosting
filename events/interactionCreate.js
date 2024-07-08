@@ -550,7 +550,7 @@ module.exports = async (client, interaction) => {
 			song name: ${titles}`,
 							};
 
-							const maxRetries = 5;
+							const maxRetries = 2;
 							let attempts = 0;
 
 							const makeRequest = () => {
