@@ -391,7 +391,7 @@ module.exports = async (client, interaction) => {
 									interaction
 										.editReply({ embeds: [embed] })
 										.then(() => {
-											console.log('Link sent successfully.');
+											console.log(`Link sent successfully. name: ${songName} `);
 
 											setTimeout(async () => {
 												await interaction
