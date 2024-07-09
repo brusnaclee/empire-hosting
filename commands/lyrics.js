@@ -1,6 +1,7 @@
 const { ApplicationCommandOptionType, EmbedBuilder } = require('discord.js');
 //const lyricsFinder = require('lyrics-finder');
-const axios = require('axios');
+const geniusApi = require('genius-lyrics-api');
+const apiKey = 'genius api';
 const db = require('../mongoDB');
 
 module.exports = {
@@ -24,14 +25,15 @@ module.exports = {
 	],
 	run: async (client, interaction) => {
 		try {
-			let lang = await db?.musicbot?.findOne({ guildID: interaction.guild.id });
-			lang = lang?.language || client.language;
-			lang = require(`../languages/${lang}.js`);
+			const lang = await db?.musicbot?.findOne({
+				guildID: interaction.guild.id,
+			});
+			const language = lang?.language || client.language;
+			const langFile = require(`../languages/${language}.js`);
 
 			const songName = interaction.options.getString('song');
 			const artistName = interaction.options.getString('artists');
 			const queue = client.player.getQueue(interaction.guild.id);
-			await interaction.deferReply({ content: 'loading' });
 
 			let title = '';
 			let artist = typeof artistName === 'string' ? artistName : ' ';
@@ -41,18 +43,7 @@ module.exports = {
 			} else {
 				// If the song name is not provided, use the currently playing song
 				if (!queue || !queue.playing) {
-					return interaction
-						.editReply({
-							content: `${lang.msg5} <a:alert:1116984255755599884>`,
-							ephemeral: true,
-						})
-						.then(() => {
-							setTimeout(async () => {
-								await interaction
-									.deleteReply()
-									.catch((err) => console.error(err));
-							}, 5000); // 60 seconds or 1 minutes
-						});
+					return interaction.reply({ content: lang.msg5, ephemeral: true });
 				}
 				title = queue.songs[0].name;
 			}
@@ -72,26 +63,25 @@ module.exports = {
 
 			title = removeUnwantedWords(title);
 
-			const lyricsResponse = await axios.get(
-				'https://geniusempire.vercel.app/api/lyrics',
-				{ params: { title: title || ' ', artist: artist || ' ' } }
-			);
-			const lyrics = lyricsResponse.data.lyrics;
 			// Defer reply with ephemeral set to true
+			await interaction.deferReply({ ephemeral: false });
 
-			if (lyricsResponse.status === 404) {
-				return interaction
-					.editReply({
-						content: 'Lyrics for this song were not found.',
-						ephemeral: true,
-					})
-					.then(() => {
-						setTimeout(async () => {
-							await interaction
-								.deleteReply()
-								.catch((err) => console.error(err));
-						}, 20000); // 60 seconds or 1 minutes
-					});
+			//const searchResults = await lyricsFinder(title);
+
+			const options = {
+				apiKey: apiKey || '',
+				title: title || '',
+				artist: artist || '',
+				optimizeQuery: true,
+			};
+
+			const lyrics = await geniusApi.getLyrics(options);
+
+			if (!lyrics) {
+				return interaction.editReply({
+					content: 'Lyrics for this song were not found.',
+					ephemeral: true,
+				});
 			}
 
 			const embed = new EmbedBuilder()
@@ -102,146 +92,16 @@ module.exports = {
 				.setFooter({ text: 'Empire ❤️' });
 
 			// Edit the reply with ephemeral set to false
-			await interaction
-				.editReply({ embeds: [embed], ephemeral: false })
-				.then(() => {
-					setTimeout(async () => {
-						await interaction.deleteReply().catch((err) => console.error(err));
-					}, 600000); // 600 seconds or 10 minutes
-				});
+			await interaction.editReply({ embeds: [embed], ephemeral: false });
 		} catch (error) {
-			let lang = await db?.musicbot?.findOne({ guildID: interaction.guild.id });
-			lang = lang?.language || client.language;
-			lang = require(`../languages/${lang}.js`);
-
-			const songName = interaction.options.getString('song');
-			const artistName = interaction.options.getString('artists');
-			const queue = client.player.getQueue(interaction.guild.id);
-
-			let title = '';
-			let artist = typeof artistName === 'string' ? artistName : ' ';
-			if (songName) {
-				// If the song name is provided, use that song
-				title = songName;
-			} else {
-				// If the song name is not provided, use the currently playing song
-				if (!queue || !queue.playing) {
-					return interaction
-						.editReply({
-							content: `${lang.msg5} <a:alert:1116984255755599884>`,
-							ephemeral: true,
-						})
-						.then(() => {
-							setTimeout(async () => {
-								await interaction
-									.deleteReply()
-									.catch((err) => console.error(err));
-							}, 5000);
-						});
-				}
-				title = queue.songs[0].name;
-			}
-
-			const removeUnwantedWords = (str) => {
-				return str
-					.replace(
-						/\(.*?\)|\[.*?\]|\bofficial\b|\bmusic\b|\bvideo\b|\blive\b|\blyrics\b|\blyric\b|\blirik\b|\bHD\b|\bversion\b|\bfull\b|\bMV\b|\bmv\b|\bcover\b|\bremix\b|\bfeaturing\b|\bver\b|\bversion\b|\bedit\b|\bclip\b|\bteaser\b|\btrailer\b|\bofficial audio\b|\bperformance\b|\bconcert\b|\bkaraoke\b|\btour\b|\bremastered\b|\bremake\b|\bintro\b|\boutro\b|\bvisualizer\b|\bvisual\b|\btrack\b|\bcensored\b|['.,":;\/\[\]()]/gi, // Menambahkan unwanted words dan simbol
-						''
-					)
-					.replace(/\bft\.?.*$/i, '')
-					.replace(/\bfeat\.?.*$/i, '')
-					.replace(/\bby\b.*$/i, '')
-					.replace(/\|.*$/g, '') // Menambahkan regex untuk menghapus semua kata setelah |
-					.trim();
-			};
-
-			title = removeUnwantedWords(title);
-
+			console.error(error);
 			if (error.code === 10062 || error.status === 404) {
-				return interaction
-					.editReply({ content: lang.msg4, ephemeral: true })
-					.then(() => {
-						setTimeout(async () => {
-							await interaction
-								.deleteReply()
-								.catch((err) => console.error(err));
-						}, 10000);
-					});
+				return interaction.editReply({ content: lang.msg4, ephemeral: true });
 			}
 			interaction.editReply({
-				content:
-					'The song is not available in the database, attempting to search with AI. <a:loading1:1149363140186882178>',
+				content: 'An error occurred while processing the request.',
 				ephemeral: true,
 			});
-
-			const url = 'https://gemini-empire.vercel.app/api/chatbot';
-			const data = {
-				prompt: `
-Could you give me full lyric of this song
-song name: ${title} ${artist}`,
-			};
-
-			const maxRetries = 2;
-			let attempts = 0;
-
-			const makeRequest = () => {
-				axios
-					.post(url, data)
-					.then((response) => {
-						const result = response.data;
-						// Send the recommendation message with buttons
-						const embed = new EmbedBuilder()
-							.setTitle(`${title}`)
-							.setDescription(`${result}`)
-							.setColor(client.config.embedColor)
-							.setTimestamp();
-
-						interaction
-							.editReply({ embeds: [embed], ephemeral: false })
-							.then(() => {
-								setTimeout(async () => {
-									await interaction
-										.deleteReply()
-										.catch((err) => console.error(err));
-								}, 600000); // 600 seconds or 10 minutes
-							})
-							.catch((e) => {});
-					})
-					.catch((error) => {
-						attempts++;
-						if (attempts < maxRetries) {
-							makeRequest();
-						} else {
-							if (error.code === 10062 || error.status === 404) {
-								return interaction
-									.editReply({ content: lang.msg4, ephemeral: true })
-									.then(() => {
-										setTimeout(async () => {
-											await interaction
-												.deleteReply()
-												.catch((err) => console.error(err));
-										}, 10000);
-									});
-							}
-							interaction
-								.editReply({
-									content: 'An error occurred while processing the request.',
-									ephemeral: true,
-								})
-								.then(() => {
-									setTimeout(async () => {
-										await interaction
-											.deleteReply()
-											.catch((err) => console.error(err));
-									}, 10000);
-								});
-							console.error('Error making the request:', error);
-						}
-					});
-			};
-
-			// Initial call to makeRequest
-			makeRequest();
 		}
 	},
 };
