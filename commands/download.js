@@ -66,7 +66,6 @@ module.exports = {
 					songName = firstResult.title;
 					songURL = `https://www.youtube.com/watch?v=${searchResults.items[0].id}`;
 					thumbnailURL = firstResult.thumbnail.thumbnails[0].url;
-					console.log(songURL);
 				}
 			} else {
 				if (!queue || !queue.playing) {
