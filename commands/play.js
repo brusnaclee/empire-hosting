@@ -240,11 +240,41 @@ module.exports = {
 
 				await interaction
 					.reply({
-						content: `Music Feature is currently unavailable for maintenance <a:alert:1116984255755599884>`,
+						content: `${lang.msg61} <a:loading1:1149363140186882178>`,
 						ephemeral: true,
 					})
 					.catch((e) => {});
-			
+				try {
+					await client.player.play(interaction.member.voice.channel, name, {
+						member: interaction.member,
+						textChannel: interaction.channel,
+						interaction,
+					});
+				} catch (e) {
+					console.log(e);
+					await interaction
+						.editReply({
+							content: `${lang.msg60} <a:alert:1116984255755599884>`,
+							ephemeral: true,
+						})
+						.catch((e) => {});
+
+					// Menunggu 3 detik
+					await new Promise((resolve) => setTimeout(resolve, 2000));
+
+					// Mengedit balasan kembali setelah 3 detik
+					await interaction
+						.editReply({
+							content:
+								'Song is not found, please check again the song name/URL or if you put URL playlist, please make it public playlist instead of private playlist',
+							ephemeral: true,
+						})
+						.catch((e) => {});
+
+					await new Promise((resolve) => setTimeout(resolve, 10000));
+				}
+
+				await interaction.deleteReply().catch((err) => console.error(err));
 
 				const voiceChannelName = interaction.member.voice.channel.name;
 				const guildName = interaction.guild.name;
