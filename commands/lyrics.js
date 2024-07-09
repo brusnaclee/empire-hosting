@@ -93,16 +93,36 @@ module.exports = {
 				.setFooter({ text: 'Empire ❤️' });
 
 			// Edit the reply with ephemeral set to false
-			await interaction.editReply({ embeds: [embed], ephemeral: false });
+			await interaction
+				.editReply({ embeds: [embed], ephemeral: false })
+				.then(() => {
+					setTimeout(async () => {
+						await interaction.deleteReply().catch((err) => console.error(err));
+					}, 600000); // 600 seconds or 10 minutes
+				});
 		} catch (error) {
 			console.error(error);
 			if (error.code === 10062 || error.status === 404) {
-				return interaction.editReply({ content: lang.msg4, ephemeral: true });
+				return interaction
+					.editReply({ content: lang.msg4, ephemeral: true })
+					.then(() => {
+						setTimeout(async () => {
+							await interaction
+								.deleteReply()
+								.catch((err) => console.error(err));
+						}, 5000); // 600 seconds or 10 minutes
+					});
 			}
-			interaction.editReply({
-				content: 'An error occurred while processing the request.',
-				ephemeral: true,
-			});
+			interaction
+				.editReply({
+					content: 'An error occurred while processing the request.',
+					ephemeral: true,
+				})
+				.then(() => {
+					setTimeout(async () => {
+						await interaction.deleteReply().catch((err) => console.error(err));
+					}, 5000); // 600 seconds or 10 minutes
+				});
 		}
 	},
 };
