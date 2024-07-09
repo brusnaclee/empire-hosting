@@ -80,9 +80,21 @@ module.exports = {
 						});
 				}
 				const song = queue.songs[0];
-				songName = song.name;
-				songURL = song.url;
-				thumbnailURL = song.thumbnail;
+				songNames = song.name;
+				const searchResults = await youtubeSearch.GetListByKeyword(
+					songNames,
+					false
+				);
+				if (searchResults.items.length === 0) {
+					return interaction.editReply({
+						content: 'No results found for your query.',
+						ephemeral: true,
+					});
+				}
+				const firstResult = searchResults.items[0];
+				songName = firstResult.title;
+				songURL = `https://www.youtube.com/watch?v=${searchResults.items[0].id}`;
+				thumbnailURL = firstResult.thumbnail.thumbnails[0].url;
 			}
 
 			const musicUrl = `https://stormy-ambitious-venom.glitch.me/api/download?musicUrl=${encodeURIComponent(
