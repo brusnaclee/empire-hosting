@@ -1,13 +1,22 @@
-const { EmbedBuilder } = require('discord.js');
+const { ApplicationCommandOptionType, EmbedBuilder } = require('discord.js');
 const db = require('../mongoDB');
+const ytdl = require('ytdl-core');
+const youtubeSearch = require('youtube-search-api');
 
 const axios = require('axios');
 
 module.exports = {
 	name: 'download',
 	description: 'Download music files.',
-	options: [],
 	permissions: '0x0000000000000800',
+	options: [
+		{
+			name: 'music',
+			description: 'Name song or url (only support youtube url).',
+			type: ApplicationCommandOptionType.String,
+			required: false,
+		},
+	],
 	run: async (client, interaction, queue, song) => {
 		try {
 			let lang = await db?.musicbot
@@ -17,29 +26,64 @@ module.exports = {
 			lang = require(`../languages/${lang}.js`);
 
 			const queue = client?.player?.getQueue(interaction?.guildId);
+			const music = interaction.options.getString('music');
 
 			await interaction.deferReply({
 				content: 'loading',
 			});
+			let songName = '';
+			let songURL = '';
+			let thumbnailURL = '';
 
-			if (!queue || !queue.playing) {
-				return interaction
-					.editReply({
-						content: `${lang.msg5} <a:alert:1116984255755599884>`,
-						ephemeral: true,
-					})
-					.then(() => {
-						setTimeout(async () => {
-							await interaction
-								.deleteReply()
-								.catch((err) => console.error(err));
-						}, 5000); // 60 seconds or 1 minutes
-					});
+			if (music) {
+				if (ytdl.validateURL(music)) {
+					songURL = music;
+					const videoInfo = await ytdl.getInfo(music);
+					songName = videoInfo.videoDetails.title;
+					if (videoInfo.videoDetails.thumbnails.length > 0) {
+						thumbnailURL = videoInfo.videoDetails.thumbnails[0].url;
+					} else {
+						thumbnailURL = client.user.displayAvatarURL({
+							dynamic: true,
+							size: 1024,
+						});
+					}
+				} else {
+					const searchResults = await youtubeSearch.GetListByKeyword(
+						music,
+						false
+					);
+					if (searchResults.items.length === 0) {
+						return interaction.editReply({
+							content: 'No results found for your query.',
+							ephemeral: true,
+						});
+					}
+					const firstResult = searchResults.items[0];
+					songName = firstResult.title;
+					songURL = `https://www.youtube.com/watch?v=${searchResults.items[0].id}`;
+					thumbnailURL = firstResult.thumbnail.thumbnails[0].url;
+				}
+			} else {
+				if (!queue || !queue.playing) {
+					return interaction
+						.editReply({
+							content: `${lang.msg5} <a:alert:1116984255755599884>`,
+							ephemeral: true,
+						})
+						.then(() => {
+							setTimeout(async () => {
+								await interaction
+									.deleteReply()
+									.catch((err) => console.error(err));
+							}, 5000); // 60 seconds or 1 minutes
+						});
+				}
+				const song = queue.songs[0];
+				songName = song.name;
+				songURL = song.url;
+				thumbnailURL = song.thumbnail;
 			}
-
-			const song = queue.songs[0];
-			const songName = song.name;
-			const songURL = song.url;
 
 			const musicUrl = `https://stormy-ambitious-venom.glitch.me/api/download?musicUrl=${encodeURIComponent(
 				songURL
@@ -52,7 +96,7 @@ module.exports = {
 
 					const embed = new EmbedBuilder()
 						.setTitle(`${songName}`)
-						.setThumbnail(song.thumbnail)
+						.setThumbnail(thumbnailURL)
 						.setColor(client.config.embedColor)
 						.setDescription(`[Download from Google Drive](${googleDriveLink})`)
 						.setTimestamp()
