@@ -230,7 +230,10 @@ module.exports = async (client, interaction) => {
 					case 'save':
 						const fs = require('fs');
 
-						const axios = require('axios');
+						const ytdl = require('@distube/ytdl-core');
+						const { google } = require('googleapis');
+						const youtubeSearch = require('youtube-search-api');
+						const scdl = require('soundcloud-downloader').default;
 
 						const queue = client?.player?.getQueue(interaction?.guildId);
 
@@ -253,62 +256,178 @@ module.exports = async (client, interaction) => {
 								});
 						}
 
+						let songName = '';
+						let songURL = '';
+						let thumbnailURL = '';
+
 						const song = queue.songs[0];
-						const songName = song.name;
-						const songURL = song.url;
-
-						const musicUrl = `https://stormy-ambitious-venom.glitch.me/api/download?musicUrl=${encodeURIComponent(
-							songURL
-						)}&musicName=${encodeURIComponent(songName)}`;
-
-						axios
-							.get(musicUrl)
-							.then((response) => {
-								const googleDriveLink = response.data.googleDriveLink;
-
-								const embed = new EmbedBuilder()
-									.setTitle(`${songName}`)
-									.setThumbnail(song.thumbnail)
-									.setColor(client.config.embedColor)
-									.setDescription(
-										`[Download from Google Drive](${googleDriveLink})`
-									)
-									.setTimestamp()
-									.setFooter({ text: `Empire ❤️` });
-
-								interaction
-									.editReply({ embeds: [embed] })
-									.then(() => {
-										console.log('Link sent successfully.');
-
-										setTimeout(async () => {
-											await interaction
-												.deleteReply()
-												.catch((err) => console.error(err));
-										}, 300000); // 300 seconds
-									})
-									.catch((err) => {
-										console.error('Error sending embed message:', err);
-									});
-							})
-							.catch((error) => {
-								console.error('Error fetching download link:', error);
-								interaction
-									.editReply({
-										content: 'Error fetching download link.',
-										ephemeral: true,
-									})
-									.then(() => {
-										setTimeout(async () => {
-											await interaction
-												.deleteReply()
-												.catch((err) => console.error(err));
-										}, 5000); // 5 seconds
-									})
-									.catch((err) => {
-										console.error('Error sending error message:', err);
-									});
+						songName = song.name;
+						songURL = song.url;
+						const searchResults = await youtubeSearch.GetListByKeyword(
+							songName,
+							false
+						);
+						if (searchResults.items.length === 0) {
+							return interaction.editReply({
+								content: 'No results found for your query.',
+								ephemeral: true,
 							});
+						}
+						const firstResult = searchResults.items[0];
+						songName = firstResult.title;
+						songURL = `https://www.youtube.com/watch?v=${searchResults.items[0].id}`;
+						thumbnailURL = firstResult.thumbnail.thumbnails[0].url;
+
+						const musicUrl = songURL;
+						const musicName = songName;
+
+						// Inisialisasi Google Drive
+						const auth = new google.auth.GoogleAuth({
+							keyFile: 'music-empire-421010-fbb0df18fbd8.json',
+							scopes: ['https://www.googleapis.com/auth/drive.file'],
+						});
+						const drive = google.drive({ version: 'v3', auth });
+
+						// SoundCloud Client ID
+						const CLIENT_ID = 'FVqQoT3N6EFHpKzah6KOfyx1RQHdXIYD';
+
+						// Function untuk mengecek apakah file sudah ada
+						function checkFileExists(fileName) {
+							try {
+								fs.accessSync(fileName, fs.constants.F_OK);
+								return true;
+							} catch (err) {
+								return false;
+							}
+						}
+
+						// Cek apakah file dengan nama yang diberikan sudah ada
+						let musicNames = 'audio';
+						let count = 1;
+						while (checkFileExists(`./music/${musicNames}.mp3`)) {
+							count++;
+							musicNames = `audio${count}`;
+						}
+
+						// Download musik dari URL yang diberikan
+						const filePath = `./music/${musicNames}.mp3`;
+						const fileStream = fs.createWriteStream(filePath);
+
+						if (ytdl.validateURL(musicUrl)) {
+							// Jika URL adalah YouTube
+							const initialQuality = 'lowestaudio';
+							ytdl(musicUrl, { quality: initialQuality }).pipe(fileStream);
+						} else if (scdl.isValidUrl(musicUrl)) {
+							// Jika URL adalah SoundCloud
+							scdl
+								.download(musicUrl, CLIENT_ID)
+								.then((stream) => {
+									stream.pipe(fileStream);
+								})
+								.catch((err) => {
+									throw new Error('Error downloading from SoundCloud');
+								});
+						} else {
+							return interaction
+								.editReply({
+									content:
+										'URL Invalid. Only YouTube and SoundCloud are supported.',
+									ephemeral: true,
+								})
+								.then(() => {
+									setTimeout(async () => {
+										await interaction
+											.deleteReply()
+											.catch((err) => console.error(err));
+									}, 5000); // 5 seconds
+								})
+								.catch((err) => {
+									console.error('Error sending error message:', err);
+								});
+						}
+
+						fileStream.on('finish', async () => {
+							// Upload musik ke Google Drive
+							const fileMetadata = {
+								name: `${musicName}.mp3`,
+								parents: ['1SNF6krdRx8o3xZldDCLnusAPp6uBhD8e'], // Ganti dengan ID folder tujuan Anda
+							};
+
+							const media = {
+								mimeType: 'audio/mpeg',
+								body: fs.createReadStream(filePath),
+							};
+
+							drive.files.create(
+								{
+									resource: fileMetadata,
+									media: media,
+									fields: 'id',
+								},
+								(err, file) => {
+									if (err) {
+										console.error('Error uploading file to Google Drive:', err);
+										fs.unlinkSync(filePath);
+										return res
+											.status(500)
+											.send('Error uploading file to Google Drive.');
+									}
+
+									const fileID = file.data.id;
+									const fileURL = `https://drive.google.com/file/d/${fileID}/view`;
+
+									const googleDriveLink = fileURL;
+
+									const embed = new EmbedBuilder()
+										.setTitle(`${songName}`)
+										.setThumbnail(song.thumbnail)
+										.setColor(client.config.embedColor)
+										.setDescription(
+											`[Download from Google Drive](${googleDriveLink})`
+										)
+										.setTimestamp()
+										.setFooter({ text: `Empire ❤️` });
+
+									interaction
+										.editReply({ embeds: [embed] })
+										.then(() => {
+											console.log('Link sent successfully.');
+
+											setTimeout(async () => {
+												await interaction
+													.deleteReply()
+													.catch((err) => console.error(err));
+											}, 300000); // 300 seconds
+										})
+										.catch((err) => {
+											console.error('Error sending embed message:', err);
+										});
+
+									fs.unlinkSync(filePath);
+
+									// Schedule file deletion after 5 minutes
+									setTimeout(() => {
+										drive.files.delete(
+											{
+												fileId: fileID,
+											},
+											(err) => {
+												if (err) {
+													console.error(
+														'Error deleting file from Google Drive:',
+														err
+													);
+												} else {
+													console.log(
+														'File dihapus dari Google Drive setelah 5 menit.'
+													);
+												}
+											}
+										);
+									}, 5 * 60 * 1000); // 5 minutes in milliseconds
+								}
+							);
+						});
 
 						break;
 					case 'saveTrack':
