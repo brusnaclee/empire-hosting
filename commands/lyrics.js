@@ -79,10 +79,18 @@ module.exports = {
 			const lyrics = await geniusApi.getLyrics(options);
 
 			if (!lyrics) {
-				return interaction.editReply({
-					content: 'Lyrics for this song were not found.',
-					ephemeral: true,
-				});
+				return interaction
+					.editReply({
+						content: 'Lyrics for this song were not found.',
+						ephemeral: true,
+					})
+					.then(() => {
+						setTimeout(async () => {
+							await interaction
+								.deleteReply()
+								.catch((err) => console.error(err));
+						}, 5000); // 600 seconds or 10 minutes
+					});
 			}
 
 			const embed = new EmbedBuilder()
