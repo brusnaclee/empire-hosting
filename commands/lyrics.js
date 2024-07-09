@@ -1,4 +1,5 @@
 const { ApplicationCommandOptionType, EmbedBuilder } = require('discord.js');
+const config = require('../config.js');
 //const lyricsFinder = require('lyrics-finder');
 const geniusApi = require('genius-lyrics-api');
 const apiKey = config.GEMINI;
