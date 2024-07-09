@@ -1,7 +1,7 @@
 const { ApplicationCommandOptionType, EmbedBuilder } = require('discord.js');
 //const lyricsFinder = require('lyrics-finder');
 const geniusApi = require('genius-lyrics-api');
-const apiKey = 'genius api';
+const apiKey = config.GEMINI;
 const db = require('../mongoDB');
 
 module.exports = {
