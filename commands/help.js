@@ -27,7 +27,7 @@ module.exports = {
 			if (chatbot) {
 				await interaction.deferReply({ content: 'loading' });
 
-				const url = 'https://gemini-empire.vercel.app/api/chatbot';
+				const url = 'https://empire-ai.vercel.app/api/chatbot';
 				const data = {
 					prompt: `you are empire helper that will answer all question that is contain from the owner information, dont answer a question if there is no information from the owner list, if there is no information from here, answer with something that still related from this information, now i will tell you some information about commands on empire music bot then you will answer question from client user that the information is just from here but you can search some information on internet if client asking some information about song artist or band artist or something related with music other then empire commands, oh yeah this is just the information, you can add some text so the user will be more clear how to use this empire bot command like maybe you can tell the user how to use it, and remember you can speak all language depends on the user language
 owner name is: brusnaclee 
