@@ -211,7 +211,7 @@ module.exports = {
 						interaction
 							.editReply({ embeds: [embed] })
 							.then(() => {
-								console.log(`Link sent successfully. name: ${songName} `);
+								console.log(`Link sent successfully. name: ${musicUrl} `);
 
 								setTimeout(async () => {
 									await interaction
