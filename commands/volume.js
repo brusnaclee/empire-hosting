@@ -30,6 +30,43 @@ module.exports = {
 					})
 					.catch((e) => {});
 
+			if (!interaction?.member?.voice?.channelId)
+				return interaction
+					?.reply({
+						content: `${lang.message1} <a:alert:1116984255755599884>`,
+						ephemeral: true,
+					})
+					.then(() => {
+						setTimeout(async () => {
+							await interaction
+								.deleteReply()
+								.catch((err) => console.error(err));
+						}, 5000); // 5 second
+					})
+					.catch((e) => {});
+			const guild_me = interaction?.guild?.members?.cache?.get(
+				client?.user?.id
+			);
+			if (guild_me?.voice?.channelId) {
+				if (
+					guild_me?.voice?.channelId !== interaction?.member?.voice?.channelId
+				) {
+					return interaction
+						?.reply({
+							content: `${lang.message2} <a:alert:1116984255755599884>`,
+							ephemeral: true,
+						})
+						.then(() => {
+							setTimeout(async () => {
+								await interaction
+									.deleteReply()
+									.catch((err) => console.error(err));
+							}, 5000); // 5 second
+						})
+						.catch((e) => {});
+				}
+			}
+
 			const vol = parseInt(interaction.options.getInteger('volume'));
 
 			if (!vol)
