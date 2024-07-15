@@ -4,7 +4,7 @@ const { SpotifyPlugin } = require('@distube/spotify');
 const { SoundCloudPlugin } = require('@distube/soundcloud');
 const { DeezerPlugin } = require('@distube/deezer');
 const { YtDlpPlugin } = require('@distube/yt-dlp');
-const config = require('./config.js');
+const config = require('./config2.js');
 const fs = require('fs');
 const client = new Client({
 	partials: [
