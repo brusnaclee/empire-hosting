@@ -26,11 +26,9 @@ module.exports = {
 	],
 	run: async (client, interaction) => {
 		try {
-			const lang = await db?.musicbot?.findOne({
-				guildID: interaction.guild.id,
-			});
-			const language = lang?.language || client.language;
-			const langFile = require(`../languages/${language}.js`);
+			let lang = await db?.musicbot?.findOne({ guildID: interaction.guild.id });
+			lang = lang?.language || client.language;
+			lang = require(`../languages/${lang}.js`);
 
 			const songName = interaction.options.getString('song');
 			const artistName = interaction.options.getString('artists');
@@ -44,7 +42,18 @@ module.exports = {
 			} else {
 				// If the song name is not provided, use the currently playing song
 				if (!queue || !queue.playing) {
-					return interaction.reply({ content: lang.msg5, ephemeral: true });
+					return interaction
+						.editReply({
+							content: `${lang.msg5} <a:alert:1116984255755599884>`,
+							ephemeral: true,
+						})
+						.then(() => {
+							setTimeout(async () => {
+								await interaction
+									.deleteReply()
+									.catch((err) => console.error(err));
+							}, 5000); // 60 seconds or 1 minutes
+						});
 				}
 				title = queue.songs[0].name;
 			}
@@ -109,6 +118,9 @@ module.exports = {
 					}, 600000); // 600 seconds or 10 minutes
 				});
 		} catch (error) {
+			let lang = await db?.musicbot?.findOne({ guildID: interaction.guild.id });
+			lang = lang?.language || client.language;
+			lang = require(`../languages/${lang}.js`);
 			console.error(error);
 			if (error.code === 10062 || error.status === 404) {
 				return interaction
