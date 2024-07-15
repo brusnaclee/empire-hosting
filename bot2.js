@@ -41,7 +41,7 @@ const player = client.player;
 client.language = config.language || 'en';
 let lang = require(`./languages/${config.language || 'en'}.js`);
 
-fs.readdir('./events', (_err, files) => {
+fs.readdir('./events2', (_err, files) => {
 	files.forEach((file) => {
 		if (!file.endsWith('.js')) return;
 		const event = require(`./events/${file}`);
@@ -52,7 +52,7 @@ fs.readdir('./events', (_err, files) => {
 	});
 });
 
-fs.readdir('./events/player', (_err, files) => {
+fs.readdir('./events2/player', (_err, files) => {
 	files.forEach((file) => {
 		if (!file.endsWith('.js')) return;
 		const player_events = require(`./events/player/${file}`);
