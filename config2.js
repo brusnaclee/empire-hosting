@@ -11,7 +11,7 @@ module.exports = {
 	support: 'https://discord.gg/5fQ25DtVeH',
 	mongodbURL: 'mongodb+srv://brusnaclee:2234@empire.kbvvoal.mongodb.net/', //write your mongodb url.
 	status: 'your music ❤️🎶❤️ ',
-	commandsDir: './commands', //Please don't touch
+	commandsDir: './commands2', //Please don't touch
 	language: 'en', //en, tr, nl, pt, fr, ar, zh_TW, it, ja
 	embedColor: '00FFFF', //hex color code
 	errorLog: '1108313712449831034', // discord error log channel id.
