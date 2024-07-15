@@ -33,6 +33,7 @@ module.exports = {
 			const songName = interaction.options.getString('song');
 			const artistName = interaction.options.getString('artists');
 			const queue = client.player.getQueue(interaction.guild.id);
+			await interaction.deferReply({ ephemeral: false });
 
 			let title = '';
 			let artist = typeof artistName === 'string' ? artistName : ' ';
@@ -72,9 +73,6 @@ module.exports = {
 			};
 
 			title = removeUnwantedWords(title);
-
-			// Defer reply with ephemeral set to true
-			await interaction.deferReply({ ephemeral: false });
 
 			//const searchResults = await lyricsFinder(title);
 
