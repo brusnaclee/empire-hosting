@@ -700,13 +700,6 @@ module.exports = async (client, interaction) => {
 
 							await interaction
 								.update({ embeds: [embed], components: [] })
-								.then(() => {
-									setTimeout(async () => {
-										await interaction
-											.deleteReply()
-											.catch((err) => console.error(err));
-									}, 300000); // 300 seconds or 5 minutes
-								})
 								.catch((e) => {});
 						} catch (e) {
 							interaction
@@ -1223,13 +1216,6 @@ module.exports = async (client, interaction) => {
 
 							await interaction
 								.update({ embeds: [embed], components: [] })
-								.then(() => {
-									setTimeout(async () => {
-										await interaction
-											.deleteReply()
-											.catch((err) => console.error(err));
-									}, 300000); // 300 seconds or 5 minutes
-								})
 								.catch((e) => {});
 						} catch (e) {
 							interaction
