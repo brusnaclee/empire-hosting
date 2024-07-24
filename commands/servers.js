@@ -10,11 +10,11 @@ const {
 const config = require('../config.js');
 module.exports = {
 	name: 'servers',
-	description: 'Admin command.',
+	description: 'Developer command.',
 	options: [
 		{
 			name: 'server',
-			description: 'The server you want to get information about.',
+			description: 'The ID of the server.',
 			type: 3,
 			required: false,
 		},
