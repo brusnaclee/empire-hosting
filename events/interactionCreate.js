@@ -168,7 +168,10 @@ module.exports = async (client, interaction) => {
 										return interaction?.reply({
 											content: `${lang.message3}: **${
 												props?.permissions
-													?.replace('0x0000000000000020', 'MANAGE GUILD')
+													?.replace(
+														'0x0000000000000020',
+														'MANAGE GUILD: This command is available only to the owner or admin of the server. Please contact the server owner or admin to use this command.'
+													)
 													?.replace('0x0000000000000800', 'SEND MESSAGES') ||
 												'SEND MESSAGES'
 											}**`,
@@ -700,6 +703,13 @@ module.exports = async (client, interaction) => {
 
 							await interaction
 								.update({ embeds: [embed], components: [] })
+								.then(() => {
+									setTimeout(async () => {
+										await interaction
+											.deleteReply()
+											.catch((err) => console.error(err));
+									}, 300000); // 300 seconds or 5 minutes
+								})
 								.catch((e) => {});
 						} catch (e) {
 							interaction
@@ -1216,6 +1226,13 @@ module.exports = async (client, interaction) => {
 
 							await interaction
 								.update({ embeds: [embed], components: [] })
+								.then(() => {
+									setTimeout(async () => {
+										await interaction
+											.deleteReply()
+											.catch((err) => console.error(err));
+									}, 300000); // 300 seconds or 5 minutes
+								})
 								.catch((e) => {});
 						} catch (e) {
 							interaction
