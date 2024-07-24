@@ -6,17 +6,17 @@ const {
 
 module.exports = {
 	name: 'sm',
-	description: 'Admin command.',
+	description: 'Developer command.',
 	options: [
 		{
-			name: 'serverid',
-			description: 'The ID of the server to send the message to.',
+			name: 'sid',
+			description: 'The ID of the server.',
 			type: ApplicationCommandOptionType.String,
 			required: true,
 		},
 		{
-			name: 'channelid',
-			description: 'The ID of the channel to send the message to.',
+			name: 'cid',
+			description: 'The ID of the channel.',
 			type: ApplicationCommandOptionType.String,
 			required: true,
 		},
