@@ -6,7 +6,7 @@ const {
 
 module.exports = {
 	name: 'msg',
-	description: 'Admin command.',
+	description: 'Developer command.',
 	options: [
 		{
 			name: 'userid',
