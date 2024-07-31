@@ -2415,7 +2415,7 @@ module.exports = async (client, interaction) => {
 								const embed = new EmbedBuilder()
 									.setColor('FF0000')
 									.setTimestamp()
-									.setDescription(`${lang.msg44} <a:Cross:1116983956227772476>`)
+									.setDescription(`${lang.msg44} <a:alert:1116984255755599884>`)
 									.setFooter({ text: `Empire ❤️` });
 
 								return interaction
