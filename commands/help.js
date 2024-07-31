@@ -50,13 +50,15 @@ empire was created since november 2022
 empire support many platform and language such as youtube, spotify, soundcloud and more powered by distube
 Our goal is to enhance your life with music
 
-now version is 3.5.0
-last change is = adding AI on /help commands, suggest with AI
-last version was 3.0.0 with change is = add more language supports
+now version is 5.0.0
+last change is = revamp button
+last version was 4.0.0 with change is = adding AI on /help commands, suggest with AI
 
 Empire Music Control Panel Button Instruction:
 
 The button will show up when there is music playing
+
+⏪ button is used to rewind music by 15 seconds.
 
 ◀️ button for play the preveous music.
 
@@ -66,17 +68,27 @@ The button will show up when there is music playing
 
 ▶️ button for skip the current music.
 
+⏩ button is used to forward music by 15 seconds.
+
+🔉 button is used to reduce 15 volume.
+
 📃 button for show the lyrics.
 
 ⏹️ button for stop the music.
 
-<:save:1117815593043775569> button for save the music to your playlist.
+<:autoplay:1230869965435961394> button for turn the queue's autoplay on or off.
+
+🔊 button is used to increase 15 volume.
 
 🔀 button for shuffle the music on the queue.
 
 <:download:1230868574722064446> button for download the music via gdrive.
 
-<:autoplay:1230869965435961394> button for turn the queue's autoplay on or off.
+➕ button for add some music or playlist to the queue.
+
+💾 button for save the music to your playlist.
+
+🔁 button for loop the music in the queue.
 
 Empire commands information:
 
@@ -96,17 +108,17 @@ Empire commands information:
 
 /dj reset - Allows you to turn off the DJ role. Usage /dj reset
 
-/download - Download music files. Usage /download
+/download - Download music files. Usage /download to download current music playing or /download (name of music) to download any of music you want.
 
 /feedback - Send a feedback to the developer. Usage /feedback (give the feedback)
 
-/filter - Apply an audio filter to the current music. Usage /filter 
+/filter - Apply an audio filter to the current music. Usage /filter it will show list of the filters.
 
 /invite - Invite bot to your server. Usage /invite
 
-/language - It allows you to set the language of the bot. Usage /language
+/language - It allows you to set the language of the bot. Usage /language it will show list of the support language, currently only support 16 language
 
-/loop - Turns the music loop mode on or off. Usage /loop
+/loop - Turns the music loop mode on or off. Usage /loop it will show loop list such as queue loop, now playing loop or stop the loop.
 
 /lyrics - Shows the lyrics of the song. Usage /lyrics or add the name like /lyrics Despacito or add the artist too like /lyrics Despacito Luis Fonsi
 
