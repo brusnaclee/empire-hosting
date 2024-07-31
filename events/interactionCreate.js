@@ -1088,9 +1088,11 @@ module.exports = async (client, interaction) => {
 										.setStyle(ButtonStyle.Success);
 
 									const actionRowResume = new ActionRowBuilder().addComponents(
+										BseekButton,
 										backBtn,
 										pauseBtn,
-										skipBtn
+										skipBtn,
+										FseekButton
 									);
 									await replyMessage
 										.edit({
