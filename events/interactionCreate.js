@@ -2413,11 +2413,9 @@ module.exports = async (client, interaction) => {
 							} else {
 								const success2 = queue.setRepeatMode(0);
 								const embed = new EmbedBuilder()
-									.setColor('00FF7D')
+									.setColor('FF0000')
 									.setTimestamp()
-									.setDescription(
-										`${lang.msg44} <a:Ceklis:1116989553744552007>`
-									)
+									.setDescription(`${lang.msg44} <a:Cross:1116983956227772476>`)
 									.setFooter({ text: `Empire ❤️` });
 
 								return interaction
