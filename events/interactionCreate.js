@@ -11,6 +11,7 @@ const {
 } = require('discord.js');
 
 const db = require('../mongoDB');
+const maxVol = require('../config.js').opt.maxVol;
 const fs = require('fs');
 const ytdl = require('ytdl-core');
 module.exports = async (client, interaction) => {
@@ -1681,7 +1682,7 @@ module.exports = async (client, interaction) => {
 										await interaction
 											.deleteReply()
 											.catch((err) => console.error(err));
-									}, 600000); // 600 seconds or 10 minutes
+									}, 300000); // 300 seconds or 5 minutes
 								});
 							} catch (e) {
 								const errorNotifer = require('../functions.js');
@@ -1692,11 +1693,624 @@ module.exports = async (client, interaction) => {
 							errorNotifer(client, interaction, e, lang);
 						}
 						break;
+
+					case 'Fseek':
+						function getFormattedTime(seconds) {
+							let hours = Math.floor(seconds / 3600);
+							let minutes = Math.floor((seconds % 3600) / 60);
+							let remainingSeconds = seconds % 60;
+
+							hours = hours < 10 ? `0${hours}` : hours;
+							minutes = minutes < 10 ? `0${minutes}` : minutes;
+							remainingSeconds =
+								remainingSeconds < 10
+									? `0${remainingSeconds}`
+									: remainingSeconds;
+
+							return hours > 0
+								? `${hours}:${minutes}:${remainingSeconds}`
+								: `${minutes}:${remainingSeconds}`;
+						}
+						try {
+							let lang = await db?.musicbot?.findOne({
+								guildID: interaction.guild.id,
+							});
+							lang = lang?.language || client.language;
+							lang = require(`../languages/${lang}.js`);
+							try {
+								const queue = client.player.getQueue(interaction.guild.id);
+								if (!queue || !queue.playing)
+									return interaction
+										.reply({ content: lang.msg5, ephemeral: true })
+										.catch((e) => {});
+
+								let position = queue.currentTime + 15;
+								let formattedtotalTime = Math.round(position);
+								if (isNaN(position))
+									return interaction
+										.reply({ content: `${lang.msg134}`, ephemeral: true })
+										.catch((e) => {});
+
+								let formattedPosition = getFormattedTime(formattedtotalTime);
+
+								queue.seek(formattedtotalTime);
+								const embed = new EmbedBuilder()
+									.setColor('00FF7D')
+									.setTimestamp()
+									.setDescription(
+										`${lang.msg135.replace(
+											'{queue.formattedCurrentTime}',
+											formattedPosition
+										)}`
+									)
+									.setFooter({ text: `Empire ❤️` });
+
+								interaction
+									.reply({ embeds: [embed] })
+									.then(() => {
+										setTimeout(async () => {
+											await interaction
+												.deleteReply()
+												.catch((err) => console.error(err));
+										}, 30000);
+									})
+									.catch((e) => {});
+							} catch (e) {
+								const errorNotifier = require('../functions.js');
+								errorNotifier(client, interaction, e, lang);
+							}
+						} catch (e) {
+							const errorNotifer = require('../functions.js');
+							errorNotifer(client, interaction, e, lang);
+						}
+
+						break;
+
+					case 'Bseek':
+						function getFormattedTime(seconds) {
+							let hours = Math.floor(seconds / 3600);
+							let minutes = Math.floor((seconds % 3600) / 60);
+							let remainingSeconds = seconds % 60;
+
+							hours = hours < 10 ? `0${hours}` : hours;
+							minutes = minutes < 10 ? `0${minutes}` : minutes;
+							remainingSeconds =
+								remainingSeconds < 10
+									? `0${remainingSeconds}`
+									: remainingSeconds;
+
+							return hours > 0
+								? `${hours}:${minutes}:${remainingSeconds}`
+								: `${minutes}:${remainingSeconds}`;
+						}
+						try {
+							let lang = await db?.musicbot?.findOne({
+								guildID: interaction.guild.id,
+							});
+							lang = lang?.language || client.language;
+							lang = require(`../languages/${lang}.js`);
+							try {
+								const queue = client.player.getQueue(interaction.guild.id);
+								if (!queue || !queue.playing)
+									return interaction
+										.reply({ content: lang.msg5, ephemeral: true })
+										.catch((e) => {});
+
+								let position = queue.currentTime - 15;
+								let formattedtotalTime = Math.round(position);
+								if (isNaN(position))
+									return interaction
+										.reply({ content: `${lang.msg134}`, ephemeral: true })
+										.catch((e) => {});
+
+								if (formattedtotalTime < 0) {
+									formattedtotalTime = 0;
+								}
+
+								let formattedPosition = getFormattedTime(formattedtotalTime);
+
+								queue.seek(formattedtotalTime);
+								const embed = new EmbedBuilder()
+									.setColor('00FF7D')
+									.setTimestamp()
+									.setDescription(
+										`${lang.msg135.replace(
+											'{queue.formattedCurrentTime}',
+											formattedPosition
+										)}`
+									)
+									.setFooter({ text: `Empire ❤️` });
+
+								interaction
+									.reply({ embeds: [embed] })
+									.then(() => {
+										setTimeout(async () => {
+											await interaction
+												.deleteReply()
+												.catch((err) => console.error(err));
+										}, 30000);
+									})
+									.catch((e) => {});
+							} catch (e) {
+								const errorNotifier = require('../functions.js');
+								errorNotifier(client, interaction, e, lang);
+							}
+						} catch (e) {
+							const errorNotifer = require('../functions.js');
+							errorNotifer(client, interaction, e, lang);
+						}
+
+						break;
+
+					case 'VolUp':
+						try {
+							let lang = await db?.musicbot?.findOne({
+								guildID: interaction.guild.id,
+							});
+							lang = lang?.language || client.language;
+							lang = require(`../languages/${lang}.js`);
+							const queue = client.player.getQueue(interaction.guild.id);
+							if (!queue || !queue.playing)
+								return interaction
+									.reply({
+										content: `${lang.msg5} <a:alert:1116984255755599884>`,
+										ephemeral: true,
+									})
+									.catch((e) => {});
+
+							if (!interaction?.member?.voice?.channelId)
+								return interaction
+									?.reply({
+										content: `${lang.message1} <a:alert:1116984255755599884>`,
+										ephemeral: true,
+									})
+									.then(() => {
+										setTimeout(async () => {
+											await interaction
+												.deleteReply()
+												.catch((err) => console.error(err));
+										}, 5000); // 5 second
+									})
+									.catch((e) => {});
+							const guild_me = interaction?.guild?.members?.cache?.get(
+								client?.user?.id
+							);
+							if (guild_me?.voice?.channelId) {
+								if (
+									guild_me?.voice?.channelId !==
+									interaction?.member?.voice?.channelId
+								) {
+									return interaction
+										?.reply({
+											content: `${lang.message2} <a:alert:1116984255755599884>`,
+											ephemeral: true,
+										})
+										.then(() => {
+											setTimeout(async () => {
+												await interaction
+													.deleteReply()
+													.catch((err) => console.error(err));
+											}, 5000); // 5 second
+										})
+										.catch((e) => {});
+								}
+							}
+
+							const voltime = queue.volume + 15;
+
+							const vol = Math.round(voltime);
+
+							if (!vol)
+								return interaction
+									.reply({
+										content: lang.msg87
+											.replace('{queue.volume}', queue.volume)
+											.replace('{maxVol}', maxVol),
+										ephemeral: true,
+									})
+									.catch((e) => {});
+
+							if (queue.volume === vol)
+								return interaction
+									.reply({
+										content: `${lang.msg88} <a:alert:1116984255755599884>`,
+										ephemeral: true,
+									})
+									.catch((e) => {});
+
+							if (vol < 0 || vol > maxVol)
+								return interaction
+									.reply({
+										content:
+											lang.ms89 +
+											' <a:Cross:1116983956227772476>'.replace(
+												'{maxVol}',
+												maxVol
+											),
+										ephemeral: true,
+									})
+									.catch((e) => {});
+
+							const success = queue.setVolume(vol);
+							const embed = new EmbedBuilder()
+								.setColor('00FF7D')
+								.setTimestamp()
+								.setDescription(
+									success
+										? `<a:Headphone:1116990535719206993> ${lang.msg90} ** ${vol} **/**${maxVol}** <a:Musicon:1116994369833144350>`
+										: lang.msg41
+								)
+								.setFooter({ text: `Empire ❤️` });
+
+							interaction
+								.reply({ embeds: [embed] })
+								.then(() => {
+									setTimeout(async () => {
+										await interaction
+											.deleteReply()
+											.catch((err) => console.error(err));
+									}, 30000);
+								})
+								.catch((e) => {});
+						} catch (e) {
+							const errorNotifer = require('../functions.js');
+							errorNotifer(client, interaction, e, lang);
+						}
+
+						break;
+
+					case 'VolDown':
+						try {
+							let lang = await db?.musicbot?.findOne({
+								guildID: interaction.guild.id,
+							});
+							lang = lang?.language || client.language;
+							lang = require(`../languages/${lang}.js`);
+
+							const queue = client.player.getQueue(interaction.guild.id);
+							if (!queue || !queue.playing)
+								return interaction
+									.reply({
+										content: `${lang.msg5} <a:alert:1116984255755599884>`,
+										ephemeral: true,
+									})
+									.catch((e) => {});
+
+							if (!interaction?.member?.voice?.channelId)
+								return interaction
+									?.reply({
+										content: `${lang.message1} <a:alert:1116984255755599884>`,
+										ephemeral: true,
+									})
+									.then(() => {
+										setTimeout(async () => {
+											await interaction
+												.deleteReply()
+												.catch((err) => console.error(err));
+										}, 5000); // 5 second
+									})
+									.catch((e) => {});
+							const guild_me = interaction?.guild?.members?.cache?.get(
+								client?.user?.id
+							);
+							if (guild_me?.voice?.channelId) {
+								if (
+									guild_me?.voice?.channelId !==
+									interaction?.member?.voice?.channelId
+								) {
+									return interaction
+										?.reply({
+											content: `${lang.message2} <a:alert:1116984255755599884>`,
+											ephemeral: true,
+										})
+										.then(() => {
+											setTimeout(async () => {
+												await interaction
+													.deleteReply()
+													.catch((err) => console.error(err));
+											}, 5000); // 5 second
+										})
+										.catch((e) => {});
+								}
+							}
+
+							const voltime = queue.volume - 15;
+
+							const vol = Math.round(voltime);
+
+							if (!vol)
+								return interaction
+									.reply({
+										content: lang.msg87
+											.replace('{queue.volume}', queue.volume)
+											.replace('{maxVol}', maxVol),
+										ephemeral: true,
+									})
+									.catch((e) => {});
+
+							if (queue.volume === vol)
+								return interaction
+									.reply({
+										content: `${lang.msg88} <a:alert:1116984255755599884>`,
+										ephemeral: true,
+									})
+									.catch((e) => {});
+
+							if (vol < 0 || vol > maxVol)
+								return interaction
+									.reply({
+										content:
+											lang.ms89 +
+											' <a:Cross:1116983956227772476>'.replace(
+												'{maxVol}',
+												maxVol
+											),
+										ephemeral: true,
+									})
+									.catch((e) => {});
+
+							const success = queue.setVolume(vol);
+							const embed = new EmbedBuilder()
+								.setColor('00FF7D')
+								.setTimestamp()
+								.setDescription(
+									success
+										? `<a:Headphone:1116990535719206993> ${lang.msg90} ** ${vol} **/**${maxVol}** <a:Musicon:1116994369833144350>`
+										: lang.msg41
+								)
+								.setFooter({ text: `Empire ❤️` });
+
+							interaction
+								.reply({ embeds: [embed] })
+								.then(() => {
+									setTimeout(async () => {
+										await interaction
+											.deleteReply()
+											.catch((err) => console.error(err));
+									}, 30000);
+								})
+								.catch((e) => {});
+						} catch (e) {
+							const errorNotifer = require('../functions.js');
+							errorNotifer(client, interaction, e, lang);
+						}
+
+						break;
+
+					case 'AddMusic':
+						{
+							const queue = client?.player?.getQueue(interaction?.guildId);
+
+							const Modal = new ModalBuilder()
+								.setCustomId('MusicModal')
+								.setTitle(lang.msg150);
+
+							const PlayList = new TextInputBuilder()
+								.setCustomId('MusicName')
+								.setLabel(lang.msg151)
+								.setRequired(true)
+								.setStyle(TextInputStyle.Short);
+
+							const PlaylistRow = new ActionRowBuilder().addComponents(
+								PlayList
+							);
+
+							Modal.addComponents(PlaylistRow);
+
+							await interaction?.showModal(Modal).catch((e) => {});
+						}
+						break;
+
+					case 'Loops':
+						{
+							let lang = await db?.musicbot?.findOne({
+								guildID: interaction.guild.id,
+							});
+							lang = lang?.language || client.language;
+							lang = require(`../languages/${lang}.js`);
+							const queue = client?.player?.getQueue(interaction?.guildId);
+
+							if (!queue || !queue.playing)
+								return interaction
+									.reply({
+										content: `${lang.msg5} <a:alert:1116984255755599884>`,
+										ephemeral: true,
+									})
+									.catch((e) => {});
+
+							if (!interaction?.member?.voice?.channelId)
+								return interaction
+									?.reply({
+										content: `${lang.message1} <a:alert:1116984255755599884>`,
+										ephemeral: true,
+									})
+									.then(() => {
+										setTimeout(async () => {
+											await interaction
+												.deleteReply()
+												.catch((err) => console.error(err));
+										}, 5000); // 5 second
+									})
+									.catch((e) => {});
+							const guild_me = interaction?.guild?.members?.cache?.get(
+								client?.user?.id
+							);
+							if (guild_me?.voice?.channelId) {
+								if (
+									guild_me?.voice?.channelId !==
+									interaction?.member?.voice?.channelId
+								) {
+									return interaction
+										?.reply({
+											content: `${lang.message2} <a:alert:1116984255755599884>`,
+											ephemeral: true,
+										})
+										.then(() => {
+											setTimeout(async () => {
+												await interaction
+													.deleteReply()
+													.catch((err) => console.error(err));
+											}, 5000); // 5 second
+										})
+										.catch((e) => {});
+								}
+							}
+
+							await interaction.deferReply({ ephemeral: false });
+
+							if (queue.repeatMode === 0) {
+								const success = queue.setRepeatMode(2);
+								const embed = new EmbedBuilder()
+									.setColor('00FF7D')
+									.setTimestamp()
+									.setDescription(
+										`${lang.msg40} <a:Ceklis:1116989553744552007>`
+									)
+									.setFooter({ text: `Empire ❤️` });
+
+								return interaction
+									?.editReply({
+										embeds: [embed],
+									})
+									.then(() => {
+										setTimeout(async () => {
+											await interaction
+												.deleteReply()
+												.catch((err) => console.error(err));
+										}, 60000);
+									})
+									.catch((e) => {});
+							} else {
+								const success2 = queue.setRepeatMode(0);
+								const embed = new EmbedBuilder()
+									.setColor('00FF7D')
+									.setTimestamp()
+									.setDescription(
+										`${lang.msg44} <a:Ceklis:1116989553744552007>`
+									)
+									.setFooter({ text: `Empire ❤️` });
+
+								return interaction
+									?.editReply({
+										embeds: [embed],
+									})
+									.then(() => {
+										setTimeout(async () => {
+											await interaction
+												.deleteReply()
+												.catch((err) => console.error(err));
+										}, 60000);
+									})
+									.catch((e) => {});
+							}
+						}
+						break;
 				}
 			}
 
 			if (interaction?.type === InteractionType.ModalSubmit) {
 				switch (interaction?.customId) {
+					case 'MusicModal':
+						{
+							const axios = require('axios');
+							const queue = client?.player?.getQueue(interaction?.guildId);
+
+							const name = interaction?.fields?.getTextInputValue('MusicName');
+
+							if (!name)
+								return interaction
+									.reply({
+										content: `${lang.msg59} <a:alert:1116984255755599884>`,
+										ephemeral: true,
+									})
+									.catch((e) => {});
+
+							await interaction
+								.reply({
+									content: `${lang.msg61} <a:loading1:1149363140186882178>`,
+									ephemeral: true,
+								})
+								.catch((e) => {});
+							try {
+								await client.player.play(
+									interaction.member.voice.channel,
+									name,
+									{
+										member: interaction.member,
+										textChannel: interaction.channel,
+										interaction,
+									}
+								);
+							} catch (e) {
+								console.log(e);
+								await interaction
+									.editReply({
+										content: `${lang.msg60} <a:alert:1116984255755599884>`,
+										ephemeral: true,
+									})
+									.catch((e) => {});
+
+								// Menunggu 3 detik
+								await new Promise((resolve) => setTimeout(resolve, 2000));
+
+								// Mengedit balasan kembali setelah 3 detik
+								await interaction
+									.editReply({
+										content:
+											'Song is not found, please check again the song name/URL or if you put URL playlist, please make it public playlist instead of private playlist',
+										ephemeral: true,
+									})
+									.catch((e) => {});
+
+								await new Promise((resolve) => setTimeout(resolve, 10000));
+							}
+
+							await interaction
+								.deleteReply()
+								.catch((err) => console.error(err));
+
+							const voiceChannelName = interaction.member.voice.channel.name;
+							const guildName = interaction.guild.name;
+							const userName = interaction.user.tag;
+							const channelId = interaction.channel.id;
+							const voiceChannelId = interaction.member.voice.channel.id;
+
+							// Buat pesan embed
+							const embed = new EmbedBuilder()
+								.setTitle('Now Playing')
+								.setColor(client.config.embedColor)
+								.addFields(
+									{ name: 'Bot is playing', value: name },
+									{
+										name: 'Voice Channel',
+										value: `${voiceChannelName} (${voiceChannelId})`,
+									},
+									{
+										name: 'Server',
+										value: `${guildName} (${interaction.guild.id})`,
+									},
+									{
+										name: 'User',
+										value: `${userName} (${interaction.user.id})`,
+									},
+									{
+										name: 'Channel Name',
+										value: `${interaction.channel.name} (${channelId})`,
+									}
+								)
+								.setTimestamp();
+
+							// URL webhook Discord
+							const webhookURL =
+								'https://discord.com/api/webhooks/1218479311192068196/vW4YsB062NwaMPKpGHCC-xFNEH7BVmeVtdIdBoIXsCclu5oRe-xf_Is9lpQiTRfor5pN';
+
+							// Kirim pesan embed ke webhook
+							axios.post(webhookURL, { embeds: [embed] }).catch((error) => {
+								console.error('Error sending embed message:', error);
+							});
+						}
+						break;
+
 					case 'playlistModal':
 						{
 							const queue = client?.player?.getQueue(interaction?.guildId);
