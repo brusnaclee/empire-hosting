@@ -1740,7 +1740,7 @@ module.exports = async (client, interaction) => {
 												await interaction
 													.deleteReply()
 													.catch((err) => console.error(err));
-											}, 300000); // 300 seconds or 5 minutes
+											}, 180000); // 180 seconds or 3 minutes
 										})
 										.catch((e) => {});
 								} catch (err) {
@@ -1830,7 +1830,7 @@ module.exports = async (client, interaction) => {
 										await interaction
 											.deleteReply()
 											.catch((err) => console.error(err));
-									}, 300000); // 300 seconds or 5 minutes
+									}, 180000); // 180 seconds or 3 minutes
 								});
 							} catch (e) {
 								const errorNotifer = require('../functions.js');
@@ -1941,7 +1941,7 @@ module.exports = async (client, interaction) => {
 											await interaction
 												.deleteReply()
 												.catch((err) => console.error(err));
-										}, 30000);
+										}, 20000);
 									})
 									.catch((e) => {});
 							} catch (e) {
@@ -2058,7 +2058,7 @@ module.exports = async (client, interaction) => {
 											await interaction
 												.deleteReply()
 												.catch((err) => console.error(err));
-										}, 30000);
+										}, 20000);
 									})
 									.catch((e) => {});
 							} catch (e) {
@@ -2179,7 +2179,7 @@ module.exports = async (client, interaction) => {
 										await interaction
 											.deleteReply()
 											.catch((err) => console.error(err));
-									}, 30000);
+									}, 20000);
 								})
 								.catch((e) => {});
 						} catch (e) {
@@ -2297,7 +2297,7 @@ module.exports = async (client, interaction) => {
 										await interaction
 											.deleteReply()
 											.catch((err) => console.error(err));
-									}, 30000);
+									}, 20000);
 								})
 								.catch((e) => {});
 						} catch (e) {
