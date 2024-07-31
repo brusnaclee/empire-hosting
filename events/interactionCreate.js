@@ -781,15 +781,15 @@ module.exports = async (client, interaction) => {
 								.setEmoji('◀️')
 								.setStyle(ButtonStyle.Secondary);
 
-							const resumeBtn = new ButtonBuilder()
-								.setCustomId('resume_button')
-								.setEmoji('⏯️')
-								.setStyle(ButtonStyle.Success);
-
 							const lyricBtn = new ButtonBuilder()
 								.setCustomId('lyric_button')
 								.setEmoji('📃')
 								.setStyle(ButtonStyle.Secondary);
+
+							const resumeBtn = new ButtonBuilder()
+								.setCustomId('resume_button')
+								.setEmoji('⏯️')
+								.setStyle(ButtonStyle.Success);
 
 							const stopBtn = new ButtonBuilder()
 								.setCustomId('stop_button')
@@ -803,7 +803,7 @@ module.exports = async (client, interaction) => {
 
 							const saveButton = new ButtonBuilder()
 								.setCustomId('saveTrack')
-								.setEmoji('1117815593043775569')
+								.setEmoji('💾')
 								.setStyle(ButtonStyle.Secondary);
 
 							const shufleButton = new ButtonBuilder()
@@ -821,22 +821,58 @@ module.exports = async (client, interaction) => {
 								.setEmoji('1230869965435961394')
 								.setStyle(ButtonStyle.Secondary);
 
+							const FseekButton = new ButtonBuilder()
+								.setCustomId('Fseek')
+								.setEmoji('⏩')
+								.setStyle(ButtonStyle.Secondary);
+
+							const BseekButton = new ButtonBuilder()
+								.setCustomId('Bseek')
+								.setEmoji('⏪')
+								.setStyle(ButtonStyle.Secondary);
+
+							const VolupButton = new ButtonBuilder()
+								.setCustomId('VolUp')
+								.setEmoji('🔊')
+								.setStyle(ButtonStyle.Secondary);
+
+							const VoldownButton = new ButtonBuilder()
+								.setCustomId('VolDown')
+								.setEmoji('🔉')
+								.setStyle(ButtonStyle.Secondary);
+
+							const AddButton = new ButtonBuilder()
+								.setCustomId('AddMusic')
+								.setEmoji('➕')
+								.setStyle(ButtonStyle.Secondary);
+
+							const loopButton = new ButtonBuilder()
+								.setCustomId('Loops')
+								.setEmoji('🔁')
+								.setStyle(ButtonStyle.Secondary);
+
 							const actionRow = new ActionRowBuilder().addComponents(
+								BseekButton,
 								backBtn,
 								resumeBtn,
-								skipBtn
+								skipBtn,
+								FseekButton
 							);
 
 							const actionRow2 = new ActionRowBuilder().addComponents(
+								VoldownButton,
 								lyricBtn,
 								stopBtn,
-								saveButton
+								autoplayButton,
+								VolupButton
 							);
 
 							const actionRow3 = new ActionRowBuilder().addComponents(
 								shufleButton,
 								downloadButton,
-								autoplayButton
+								AddButton,
+								saveButton,
+								loopButton
 							);
 
 							const replyMessage = await interaction
@@ -929,15 +965,15 @@ module.exports = async (client, interaction) => {
 								.setEmoji('◀️')
 								.setStyle(ButtonStyle.Secondary);
 
-							const resumeBtn = new ButtonBuilder()
-								.setCustomId('resume_button')
-								.setEmoji('⏯️')
-								.setStyle(ButtonStyle.Success);
-
 							const lyricBtn = new ButtonBuilder()
 								.setCustomId('lyric_button')
 								.setEmoji('📃')
 								.setStyle(ButtonStyle.Secondary);
+
+							const resumeBtn = new ButtonBuilder()
+								.setCustomId('resume_button')
+								.setEmoji('⏯️')
+								.setStyle(ButtonStyle.Success);
 
 							const stopBtn = new ButtonBuilder()
 								.setCustomId('stop_button')
@@ -951,7 +987,7 @@ module.exports = async (client, interaction) => {
 
 							const saveButton = new ButtonBuilder()
 								.setCustomId('saveTrack')
-								.setEmoji('1117815593043775569')
+								.setEmoji('💾')
 								.setStyle(ButtonStyle.Secondary);
 
 							const shufleButton = new ButtonBuilder()
@@ -969,22 +1005,58 @@ module.exports = async (client, interaction) => {
 								.setEmoji('1230869965435961394')
 								.setStyle(ButtonStyle.Secondary);
 
+							const FseekButton = new ButtonBuilder()
+								.setCustomId('Fseek')
+								.setEmoji('⏩')
+								.setStyle(ButtonStyle.Secondary);
+
+							const BseekButton = new ButtonBuilder()
+								.setCustomId('Bseek')
+								.setEmoji('⏪')
+								.setStyle(ButtonStyle.Secondary);
+
+							const VolupButton = new ButtonBuilder()
+								.setCustomId('VolUp')
+								.setEmoji('🔊')
+								.setStyle(ButtonStyle.Secondary);
+
+							const VoldownButton = new ButtonBuilder()
+								.setCustomId('VolDown')
+								.setEmoji('🔉')
+								.setStyle(ButtonStyle.Secondary);
+
+							const AddButton = new ButtonBuilder()
+								.setCustomId('AddMusic')
+								.setEmoji('➕')
+								.setStyle(ButtonStyle.Secondary);
+
+							const loopButton = new ButtonBuilder()
+								.setCustomId('Loops')
+								.setEmoji('🔁')
+								.setStyle(ButtonStyle.Secondary);
+
 							const actionRow = new ActionRowBuilder().addComponents(
+								BseekButton,
 								backBtn,
 								resumeBtn,
-								skipBtn
+								skipBtn,
+								FseekButton
 							);
 
 							const actionRow2 = new ActionRowBuilder().addComponents(
+								VoldownButton,
 								lyricBtn,
 								stopBtn,
-								saveButton
+								autoplayButton,
+								VolupButton
 							);
 
 							const actionRow3 = new ActionRowBuilder().addComponents(
 								shufleButton,
 								downloadButton,
-								autoplayButton
+								AddButton,
+								saveButton,
+								loopButton
 							);
 
 							const replyMessage = await interaction
@@ -1327,7 +1399,7 @@ module.exports = async (client, interaction) => {
 							const pauseBtn = new ButtonBuilder()
 								.setCustomId('pause_button')
 								.setEmoji('⏸️')
-								.setStyle(ButtonStyle.Success);
+								.setStyle(ButtonStyle.Secondary);
 
 							const stopBtn = new ButtonBuilder()
 								.setCustomId('stop_button')
@@ -1341,7 +1413,7 @@ module.exports = async (client, interaction) => {
 
 							const saveButton = new ButtonBuilder()
 								.setCustomId('saveTrack')
-								.setEmoji('1117815593043775569')
+								.setEmoji('💾')
 								.setStyle(ButtonStyle.Secondary);
 
 							const shufleButton = new ButtonBuilder()
@@ -1359,22 +1431,58 @@ module.exports = async (client, interaction) => {
 								.setEmoji('1230869965435961394')
 								.setStyle(ButtonStyle.Secondary);
 
+							const FseekButton = new ButtonBuilder()
+								.setCustomId('Fseek')
+								.setEmoji('⏩')
+								.setStyle(ButtonStyle.Secondary);
+
+							const BseekButton = new ButtonBuilder()
+								.setCustomId('Bseek')
+								.setEmoji('⏪')
+								.setStyle(ButtonStyle.Secondary);
+
+							const VolupButton = new ButtonBuilder()
+								.setCustomId('VolUp')
+								.setEmoji('🔊')
+								.setStyle(ButtonStyle.Secondary);
+
+							const VoldownButton = new ButtonBuilder()
+								.setCustomId('VolDown')
+								.setEmoji('🔉')
+								.setStyle(ButtonStyle.Secondary);
+
+							const AddButton = new ButtonBuilder()
+								.setCustomId('AddMusic')
+								.setEmoji('➕')
+								.setStyle(ButtonStyle.Secondary);
+
+							const loopButton = new ButtonBuilder()
+								.setCustomId('Loops')
+								.setEmoji('🔁')
+								.setStyle(ButtonStyle.Secondary);
+
 							const actionRow = new ActionRowBuilder().addComponents(
+								BseekButton,
 								backBtn,
 								pauseBtn,
-								skipBtn
+								skipBtn,
+								FseekButton
 							);
 
 							const actionRow2 = new ActionRowBuilder().addComponents(
+								VoldownButton,
 								lyricBtn,
 								stopBtn,
-								saveButton
+								autoplayButton,
+								VolupButton
 							);
 
 							const actionRow3 = new ActionRowBuilder().addComponents(
 								shufleButton,
 								downloadButton,
-								autoplayButton
+								AddButton,
+								saveButton,
+								loopButton
 							);
 
 							await interaction
@@ -1464,7 +1572,7 @@ module.exports = async (client, interaction) => {
 							const pauseBtn = new ButtonBuilder()
 								.setCustomId('pause_button')
 								.setEmoji('⏸️')
-								.setStyle(ButtonStyle.Success);
+								.setStyle(ButtonStyle.Secondary);
 
 							const stopBtn = new ButtonBuilder()
 								.setCustomId('stop_button')
@@ -1478,7 +1586,7 @@ module.exports = async (client, interaction) => {
 
 							const saveButton = new ButtonBuilder()
 								.setCustomId('saveTrack')
-								.setEmoji('1117815593043775569')
+								.setEmoji('💾')
 								.setStyle(ButtonStyle.Secondary);
 
 							const shufleButton = new ButtonBuilder()
@@ -1496,22 +1604,58 @@ module.exports = async (client, interaction) => {
 								.setEmoji('1230869965435961394')
 								.setStyle(ButtonStyle.Secondary);
 
+							const FseekButton = new ButtonBuilder()
+								.setCustomId('Fseek')
+								.setEmoji('⏩')
+								.setStyle(ButtonStyle.Secondary);
+
+							const BseekButton = new ButtonBuilder()
+								.setCustomId('Bseek')
+								.setEmoji('⏪')
+								.setStyle(ButtonStyle.Secondary);
+
+							const VolupButton = new ButtonBuilder()
+								.setCustomId('VolUp')
+								.setEmoji('🔊')
+								.setStyle(ButtonStyle.Secondary);
+
+							const VoldownButton = new ButtonBuilder()
+								.setCustomId('VolDown')
+								.setEmoji('🔉')
+								.setStyle(ButtonStyle.Secondary);
+
+							const AddButton = new ButtonBuilder()
+								.setCustomId('AddMusic')
+								.setEmoji('➕')
+								.setStyle(ButtonStyle.Secondary);
+
+							const loopButton = new ButtonBuilder()
+								.setCustomId('Loops')
+								.setEmoji('🔁')
+								.setStyle(ButtonStyle.Secondary);
+
 							const actionRow = new ActionRowBuilder().addComponents(
+								BseekButton,
 								backBtn,
 								pauseBtn,
-								skipBtn
+								skipBtn,
+								FseekButton
 							);
 
 							const actionRow2 = new ActionRowBuilder().addComponents(
+								VoldownButton,
 								lyricBtn,
 								stopBtn,
-								saveButton
+								autoplayButton,
+								VolupButton
 							);
 
 							const actionRow3 = new ActionRowBuilder().addComponents(
 								shufleButton,
 								downloadButton,
-								autoplayButton
+								AddButton,
+								saveButton,
+								loopButton
 							);
 
 							await interaction
