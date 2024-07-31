@@ -1721,8 +1721,49 @@ module.exports = async (client, interaction) => {
 								const queue = client.player.getQueue(interaction.guild.id);
 								if (!queue || !queue.playing)
 									return interaction
-										.reply({ content: lang.msg5, ephemeral: true })
+										.reply({
+											content: `${lang.msg5} <a:alert:1116984255755599884>`,
+											ephemeral: true,
+										})
 										.catch((e) => {});
+
+								if (!interaction?.member?.voice?.channelId)
+									return interaction
+										?.reply({
+											content: `${lang.message1} <a:alert:1116984255755599884>`,
+											ephemeral: true,
+										})
+										.then(() => {
+											setTimeout(async () => {
+												await interaction
+													.deleteReply()
+													.catch((err) => console.error(err));
+											}, 5000); // 5 second
+										})
+										.catch((e) => {});
+								const guild_me = interaction?.guild?.members?.cache?.get(
+									client?.user?.id
+								);
+								if (guild_me?.voice?.channelId) {
+									if (
+										guild_me?.voice?.channelId !==
+										interaction?.member?.voice?.channelId
+									) {
+										return interaction
+											?.reply({
+												content: `${lang.message2} <a:alert:1116984255755599884>`,
+												ephemeral: true,
+											})
+											.then(() => {
+												setTimeout(async () => {
+													await interaction
+														.deleteReply()
+														.catch((err) => console.error(err));
+												}, 5000); // 5 second
+											})
+											.catch((e) => {});
+									}
+								}
 
 								let position = queue.currentTime + 15;
 								let formattedtotalTime = Math.round(position);
@@ -1793,8 +1834,49 @@ module.exports = async (client, interaction) => {
 								const queue = client.player.getQueue(interaction.guild.id);
 								if (!queue || !queue.playing)
 									return interaction
-										.reply({ content: lang.msg5, ephemeral: true })
+										.reply({
+											content: `${lang.msg5} <a:alert:1116984255755599884>`,
+											ephemeral: true,
+										})
 										.catch((e) => {});
+
+								if (!interaction?.member?.voice?.channelId)
+									return interaction
+										?.reply({
+											content: `${lang.message1} <a:alert:1116984255755599884>`,
+											ephemeral: true,
+										})
+										.then(() => {
+											setTimeout(async () => {
+												await interaction
+													.deleteReply()
+													.catch((err) => console.error(err));
+											}, 5000); // 5 second
+										})
+										.catch((e) => {});
+								const guild_me = interaction?.guild?.members?.cache?.get(
+									client?.user?.id
+								);
+								if (guild_me?.voice?.channelId) {
+									if (
+										guild_me?.voice?.channelId !==
+										interaction?.member?.voice?.channelId
+									) {
+										return interaction
+											?.reply({
+												content: `${lang.message2} <a:alert:1116984255755599884>`,
+												ephemeral: true,
+											})
+											.then(() => {
+												setTimeout(async () => {
+													await interaction
+														.deleteReply()
+														.catch((err) => console.error(err));
+												}, 5000); // 5 second
+											})
+											.catch((e) => {});
+									}
+								}
 
 								let position = queue.currentTime - 15;
 								let formattedtotalTime = Math.round(position);
@@ -2216,6 +2298,44 @@ module.exports = async (client, interaction) => {
 							const queue = client?.player?.getQueue(interaction?.guildId);
 
 							const name = interaction?.fields?.getTextInputValue('MusicName');
+
+							if (!interaction?.member?.voice?.channelId)
+								return interaction
+									?.reply({
+										content: `${lang.message1} <a:alert:1116984255755599884>`,
+										ephemeral: true,
+									})
+									.then(() => {
+										setTimeout(async () => {
+											await interaction
+												.deleteReply()
+												.catch((err) => console.error(err));
+										}, 5000); // 5 second
+									})
+									.catch((e) => {});
+							const guild_me = interaction?.guild?.members?.cache?.get(
+								client?.user?.id
+							);
+							if (guild_me?.voice?.channelId) {
+								if (
+									guild_me?.voice?.channelId !==
+									interaction?.member?.voice?.channelId
+								) {
+									return interaction
+										?.reply({
+											content: `${lang.message2} <a:alert:1116984255755599884>`,
+											ephemeral: true,
+										})
+										.then(() => {
+											setTimeout(async () => {
+												await interaction
+													.deleteReply()
+													.catch((err) => console.error(err));
+											}, 5000); // 5 second
+										})
+										.catch((e) => {});
+								}
+							}
 
 							if (!name)
 								return interaction
