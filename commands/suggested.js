@@ -81,10 +81,14 @@ module.exports = {
 						.catch((e) => {});
 				}
 			}
+			const key = client.config.GEMINI;
 
-			const url = 'https://gemini-empire.vercel.app/api/chatbot';
 			const data = {
-				prompt: `Please suggest at least 5 similar songs based on the given song list. 
+				model: 'gpt-3.5-turbo',
+				messages: [
+					{
+						role: 'user',
+						content: `Please suggest at least 5 similar songs based on the given song list. 
 			The similar songs should be produced by the same bands or artists like on the given song list. 
 			List the suggestions in the following format without any additional text or images: 
 			
@@ -110,13 +114,24 @@ module.exports = {
 
 			Here's the list of the songs: 
 			${queue.songHistory10}`,
+					},
+				],
+				temperature: 0.7,
 			};
 
 			axios
-				.post(url, data)
+				.post(
+					'https://gemini-openai-proxy.zuisong.workers.dev/v1/chat/completions',
+					data,
+					{
+						headers: {
+							Authorization: `Bearer ${key}`, // Replace with your actual API key
+							'Content-Type': 'application/json',
+						},
+					}
+				)
 				.then((response) => {
-					const result = response.data;
-
+					const result = response.data.choices[0].message.content;
 					const regex = /\d+\.\s+(.+?)(?=\n|$)/g;
 					const matches = [];
 					let match;
