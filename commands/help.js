@@ -27,20 +27,14 @@ module.exports = {
 			if (chatbot) {
 				await interaction.deferReply({ content: 'loading' });
 
-				const MODEL_NAME = 'gemini-pro';
 				const key = client.config.GEMINI;
-				const genAI = new GoogleGenerativeAI(key);
 
-				const model = genAI.getGenerativeModel({ model: MODEL_NAME });
-				const generationConfig = {
-					temperature: 0.9,
-					topK: 1,
-					topP: 1,
-					maxOutputTokens: 4096,
-				};
-				const parts = [
-					{
-						text: `you are empire helper that will answer all question that is contain from the owner information, dont answer a question if there is no information from the owner list, if there is no information from here, answer with something that still related from this information, now i will tell you some information about commands on empire music bot then you will answer question from client user that the information is just from here but you can search some information on internet if client asking some information about song artist or band artist or something related with music other then empire commands, oh yeah this is just the information, you can add some text so the user will be more clear how to use this empire bot command like maybe you can tell the user how to use it, and remember you can speak all language depends on the user language
+				const data = {
+					model: 'gpt-3.5-turbo',
+					messages: [
+						{
+							role: 'user',
+							content: `you are empire helper that will answer all question that is contain from the owner information, dont answer a question if there is no information from the owner list, if there is no information from here, answer with something that still related from this information, now i will tell you some information about commands on empire music bot then you will answer question from client user that the information is just from here but you can search some information on internet if client asking some information about song artist or band artist or something related with music other then empire commands, oh yeah this is just the information, you can add some text so the user will be more clear how to use this empire bot command like maybe you can tell the user how to use it, and remember you can speak all language depends on the user language
 owner name is: brusnaclee 
 you are AI or chatbot that pro at music so you can do with all topic related with music and you are here to answer and explain all question about commands on empire music bot or give answer that still related with music like give artist info or suggest some music based on what the question, and i want you to introduce yourself as a empire chatbot or empire AI
 
@@ -177,29 +171,43 @@ Empire commands information:
 /volume - Allows you to adjust the music volume. Usage /volume for show the volume, /volume (the value wanna change) /volume 100
 
             Now this is the question from the <@${interaction.user.id}>: ${chatbot}`,
-					},
-				];
-				const result = await model.generateContent({
-					contents: [{ role: 'user', parts }],
-					generationConfig,
-				});
-				const reply = await result.response.text();
+						},
+					],
+					temperature: 0.7,
+				};
 
-				const embed = new EmbedBuilder()
-					.setTitle(`Empire Chatbot`)
-					.setDescription(`> ${reply}`)
-					.setColor(client.config.embedColor)
-					.setTimestamp();
-				return interaction
-					.editReply({ embeds: [embed] })
-					.then(() => {
-						setTimeout(async () => {
-							await interaction
-								.deleteReply()
-								.catch((err) => console.error(err));
-						}, 120000); // 120 seconds or 2 minutes
+				axios
+					.post(
+						'https://gemini-openai-proxy.zuisong.workers.dev/v1/chat/completions',
+						data,
+						{
+							headers: {
+								Authorization: `Bearer ${key}`, // Replace with your actual API key
+								'Content-Type': 'application/json',
+							},
+						}
+					)
+					.then((response) => {
+						const reply = response.data.choices[0].message.content;
+						const embed = new EmbedBuilder()
+							.setTitle(`Empire Chatbot`)
+							.setDescription(`> ${reply}`)
+							.setColor(client.config.embedColor)
+							.setTimestamp();
+						return interaction
+							.editReply({ embeds: [embed] })
+							.then(() => {
+								setTimeout(async () => {
+									await interaction
+										.deleteReply()
+										.catch((err) => console.error(err));
+								}, 120000); // 120 seconds or 2 minutes
+							})
+							.catch((e) => {});
 					})
-					.catch((e) => {});
+					.catch((error) => {
+						console.error('Error:', error);
+					});
 			} else {
 				const commands = client.commands.filter((x) => x.showHelp !== false);
 
