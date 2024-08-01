@@ -30,7 +30,7 @@ module.exports = {
 				const key = client.config.GEMINI;
 
 				const data = {
-					model: 'gpt-3.5-turbo',
+					model: 'gemini-1.5-flash-latest',
 					messages: [
 						{
 							role: 'user',
@@ -41,6 +41,8 @@ Empire created: November 2022
 Current version: 5.0.0 (revamp button)
 Previous version: 4.0.0 (added AI on /help, suggest with AI)
 Supports platforms: YouTube, Spotify, SoundCloud
+Bot website: https://empire.is-great.net/
+Invite Bot to server: https://discord.com/oauth2/authorize?client_id=1044063413833302108&permissions=414585318465&scope=bot+applications.commands
 Goal: Enhance life with music
 
 Empire Music Control Panel Button Instructions:
