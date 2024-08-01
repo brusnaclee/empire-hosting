@@ -27,7 +27,7 @@ module.exports = {
 			if (chatbot) {
 				await interaction.deferReply({ content: 'loading' });
 
-				const MODEL_NAME = 'gemini-1.5-pro-latest';
+				const MODEL_NAME = 'gemini-pro';
 				const key = client.config.GEMINI;
 				const genAI = new GoogleGenerativeAI(key);
 
