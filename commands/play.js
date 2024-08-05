@@ -250,6 +250,17 @@ module.exports = {
 						textChannel: interaction.channel,
 						interaction,
 					});
+
+					// Mengedit balasan kembali setelah 3 detik
+					await interaction
+						.editReply({
+							content:
+								'New Feature: Easily add music to your queue! Simply press the ➕ button on the music control to search for and add your favorite songs.',
+							ephemeral: true,
+						})
+						.catch((e) => {});
+
+					await new Promise((resolve) => setTimeout(resolve, 20000));
 				} catch (e) {
 					console.log(e);
 					await interaction
