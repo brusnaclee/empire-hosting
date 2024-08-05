@@ -34,7 +34,7 @@ module.exports = {
 		},
 	],
 	run: async (client, interaction) => {
-		if (!client.config.ownerID.includes(interaction?.user?.id)) {
+		if (!client.config.ownerID.includes(interaction.user.id)) {
 			return interaction
 				.reply({
 					content: "You don't have permission to use this command.",
@@ -43,8 +43,8 @@ module.exports = {
 				.catch((e) => {});
 		}
 
-		const serverId = interaction.options.getString('serverid');
-		const channelId = interaction.options.getString('channelid');
+		const serverId = interaction.options.getString('sid');
+		const channelId = interaction.options.getString('cid');
 		const title = interaction.options.getString('title');
 		const messageContent = interaction.options.getString('content');
 
@@ -96,6 +96,7 @@ module.exports = {
 						'Bot does not have permission to send messages in the specified channel. <a:Cross:1116983956227772476>',
 					ephemeral: true,
 				});
+				console.log(error);
 			} else {
 				console.error('Error sending message:', error);
 				await interaction.editReply({
