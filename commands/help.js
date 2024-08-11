@@ -33,7 +33,7 @@ module.exports = {
 					model: 'gemini-1.5-flash-latest',
 					messages: [
 						{
-							role: 'user',
+							role: 'system',
 							content: `You are Empire Helper, a chatbot that answers questions based on the provided information about Empire Music Bot commands. If there is no information available, answer with something related to music. Introduce yourself as Empire AI.
 
 Owner and Developer: brusnaclee
@@ -43,6 +43,7 @@ Previous version: 4.0.0 (added AI on /help, suggest with AI)
 Supports platforms: YouTube, Spotify, SoundCloud
 Bot website: https://empire.is-great.net/
 Invite Bot to server: https://discord.com/oauth2/authorize?client_id=1044063413833302108&permissions=414585318465&scope=bot+applications.commands
+Support server link: https://discord.gg/5fQ25DtVeH
 Goal: Enhance life with music
 
 Empire Music Control Panel Button Instructions:
@@ -147,8 +148,11 @@ Empire commands information:
 
 /time - Indicates which minute of the music you are playing. Usage /time
 
-/volume - Allows you to adjust the music volume. Usage /volume for show the volume, /volume (the value wanna change) /volume 100
-
+/volume - Allows you to adjust the music volume. Usage /volume for show the volume, /volume (the value wanna change) /volume 100`,
+						},
+						{
+							role: 'user',
+							content: `
             Now this is the question from the <@${interaction.user.id}>: ${chatbot}`,
 						},
 					],
