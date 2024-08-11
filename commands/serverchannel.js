@@ -35,6 +35,8 @@ module.exports = {
 			channelInfo.push(`${channel.name} - ${channel.id}`);
 		});
 
+		console.log(channelInfo.join('\n'));
+
 		const embed = new EmbedBuilder()
 			.setTitle('Server Channels')
 			.setDescription(channelInfo.join('\n'));
