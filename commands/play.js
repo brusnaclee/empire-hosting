@@ -265,8 +265,9 @@ module.exports = {
 					// Mengedit balasan kembali setelah 3 detik
 					await interaction
 						.editReply({
-							content:
-								'Song is not found, please check again the song name/URL or if you put URL playlist, please make it public playlist instead of private playlist',
+							content: `Song is not found, please check again the song name/URL or if you put URL playlist, please make it public playlist instead of private playlist
+							
+Note: YouTube links may not work due to restrictions. Please use alternative platforms such as Spotify, SoundCloud, Deezer, or simply provide the name and artist of the songs.`,
 							ephemeral: true,
 						})
 						.catch((e) => {});
