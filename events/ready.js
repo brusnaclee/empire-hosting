@@ -76,7 +76,7 @@ module.exports = async (client) => {
 			{ name: `With ${totalMembers} Users`, type: ActivityType.Listening },
 			{ name: `${config.status}`, type: ActivityType.Listening },
 			{ name: 'With AI', type: ActivityType.Playing },
-			{ name: `${config.status}`, type: ActivityType.Listening },
+			{ name: `With ${totalMembers} Users`, type: ActivityType.Listening },
 			{ name: 'Anime', type: ActivityType.Watching },
 			{ name: `${config.status}`, type: ActivityType.Listening },
 
