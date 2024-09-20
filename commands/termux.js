@@ -3,7 +3,7 @@ const { exec } = require('child_process');
 
 module.exports = {
 	name: 'termux',
-	description: 'Admin command.',
+	description: 'Developer command.',
 	options: [
 		{
 			name: 'command',
