@@ -110,7 +110,7 @@ module.exports = {
 			const drive = google.drive({ version: 'v3', auth });
 
 			// SoundCloud Client ID
-			const CLIENT_ID = 'FVqQoT3N6EFHpKzah6KOfyx1RQHdXIYD';
+			const CLIENT_ID = 'yLfooVZK5emWPvRLZQlSuGTO8pof6z4t';
 
 			// Function untuk mengecek apakah file sudah ada
 			function checkFileExists(fileName) {
