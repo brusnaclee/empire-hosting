@@ -13,6 +13,7 @@ module.exports = {
 				})
 				.catch((e) => {});
 		}
+		await interaction.deferReply({ ephemeral: false }); // Menunda respon dan mengatur ephemeral menjadi false
 
 		const botChannelInfo = [];
 
@@ -35,7 +36,6 @@ module.exports = {
 			.setFooter({ text: `Empire ❤️` });
 
 		try {
-			await interaction.deferReply({ ephemeral: false }); // Menunda respon dan mengatur ephemeral menjadi false
 			await interaction.editReply({ embeds: [embed], ephemeral: false }); // Mengedit respons dengan embed dan ephemeral false
 		} catch (error) {
 			const errorNotifier = require('../functions.js');
