@@ -18,10 +18,12 @@ module.exports = {
 		const botChannelInfo = [];
 
 		client.guilds.cache.forEach((guild) => {
-			const botVoiceChannel = guild.voiceStates.cache.get(client.user.id);
+			const botVoiceChannel = guild.channels.cache.find(
+				(channel) => channel.type === 2 && channel.members.has(client.user.id)
+			);
 
-			if (botVoiceChannel && botVoiceChannel.channel) {
-				botChannelInfo.push(`${guild.name}: ${botVoiceChannel.channel.name}`);
+			if (botVoiceChannel) {
+				botChannelInfo.push(`${guild.name}: ${botVoiceChannel.name}`);
 			}
 		});
 
