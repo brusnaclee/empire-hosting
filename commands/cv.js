@@ -13,14 +13,14 @@ module.exports = {
 				})
 				.catch((e) => {});
 		}
-		await interaction.deferReply({ ephemeral: false }); // Menunda respon dan mengatur ephemeral menjadi false
+		await interaction.deferReply({ ephemeral: false });
 
 		const botChannelInfo = [];
 
 		client.guilds.cache.forEach((guild) => {
 			const botVoiceChannel = guild.voiceStates.cache.get(client.user.id);
 
-			if (botVoiceChannel) {
+			if (botVoiceChannel && botVoiceChannel.channel) {
 				botChannelInfo.push(`${guild.name}: ${botVoiceChannel.channel.name}`);
 			}
 		});
@@ -36,7 +36,7 @@ module.exports = {
 			.setFooter({ text: `Empire ❤️` });
 
 		try {
-			await interaction.editReply({ embeds: [embed], ephemeral: false }); // Mengedit respons dengan embed dan ephemeral false
+			await interaction.editReply({ embeds: [embed], ephemeral: false });
 		} catch (error) {
 			const errorNotifier = require('../functions.js');
 			errorNotifier(client, interaction, error, lang);
