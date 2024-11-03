@@ -119,7 +119,7 @@ module.exports = async (client, queue, song, interaction) => {
 			const AddButton = new ButtonBuilder()
 				.setCustomId('AddMusic')
 				.setEmoji('➕')
-				.setStyle(ButtonStyle.Primary);
+				.setStyle(ButtonStyle.Secondary);
 
 			const loopButton = new ButtonBuilder()
 				.setCustomId('Loops')
@@ -189,7 +189,43 @@ module.exports = async (client, queue, song, interaction) => {
 					// Menyimpan ID pesan baru ke dalam queue.lastMessagesId
 					queue.lastMessagesId.push(newMessage.id);
 				})
-				.catch(console.error);
+				.catch(async (error) => {
+					console.error('Error sending message to text channel:', error);
+
+					if (error.code === 50001) {
+						// Get the user who requested the song
+						const userId = song.user.id;
+						try {
+							const user = await client.users.fetch(userId);
+
+							// Get the channel ID and name
+							const channelId = queue.textChannel.id;
+							const channelName = queue.textChannel.name;
+
+							// Create an embed message
+							const embedError = new EmbedBuilder()
+								.setTitle('🚫 Message Delivery Issue')
+								.setColor('#FF5555') // Use a color code to make the embed visually appealing
+								.setDescription(
+									`Hello! I wanted to inform you that I was unable to send messages in the channel **${channelName}** (${channelId}) due to insufficient permissions. 
+							
+							Error Details:
+							**Error sending message to text channel:** \`DiscordAPIError[50001]: Missing Access\`
+							
+							Please reach out to the server owner or an administrator to adjust my permissions so I can continue providing updates and information in that channel. 
+							
+							Thank you for your understanding! 🙏`
+								)
+								.setFooter({ text: 'Empire ❤️' }) // Customized footer text
+								.setTimestamp(); // Adds a timestamp for when the message was sent
+
+							// Send the embed message to the user via DM
+							await user.send({ embeds: [embedError] });
+						} catch (dmError) {
+							console.error('Error sending DM to user:', dmError);
+						}
+					}
+				});
 
 			if (!queue.songHistory10) {
 				queue.songHistory10 = [];
