@@ -192,7 +192,7 @@ module.exports = async (client, queue, song, interaction) => {
 				.catch(async (error) => {
 					console.error('Error sending message to text channel:', error);
 
-					if (error.code === 50001) {
+					if (error.code === 50001 || error.code === 50013) {
 						// Get the user who requested the song
 						const userId = song.user.id;
 						try {
