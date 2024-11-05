@@ -166,6 +166,49 @@ module.exports = {
 									}
 								);
 							} catch (e) {
+								if (e.errorCode === 'VOICE_MISSING_PERMS') {
+									const voiceChannelId = interaction.member.voice.channel.id;
+									const voiceChannelName =
+										interaction.member.voice.channel.name;
+									const embedError = new EmbedBuilder()
+										.setTitle('🚫 Error Joining Voice')
+										.setColor('#FF5555')
+										.setDescription(
+											`I do not have permission to join the voice channel **${voiceChannelName}** (ID: ${voiceChannelId}). 
+											
+											Please check the permissions for this channel and ensure I have permission to join and speak. 
+											
+											Error Details:
+											**Error Code:** \`VOICE_MISSING_PERMS\`
+											
+											If you need assistance, reach out to the server owner or an administrator.`
+										)
+										.setFooter({ text: 'Empire ❤️' })
+										.setTimestamp();
+
+									try {
+										const userId = interaction.user.id;
+										const user = await client.users.fetch(userId);
+										await user.send({ embeds: [embedError] });
+									} catch (dmError) {
+										console.error('Error sending DM to user:', dmError);
+									}
+
+									await interaction
+										.editReply({
+											content: `I encountered an issue joining the voice channel **${voiceChannelName}** due to missing permissions. Please check the settings. <a:alert:1116984255755599884>`,
+											ephemeral: true,
+										})
+										.catch((e) => {});
+
+									await new Promise((resolve) => setTimeout(resolve, 15000));
+									await interaction
+										.deleteReply()
+										.catch((err) => console.error(err));
+
+									return;
+								}
+
 								await interaction
 									.editReply({
 										content: `${lang.msg60} <a:alert:1116984255755599884>`,
@@ -252,6 +295,47 @@ module.exports = {
 					});
 				} catch (e) {
 					console.log(e);
+
+					if (e.errorCode === 'VOICE_MISSING_PERMS') {
+						const voiceChannelId = interaction.member.voice.channel.id;
+						const voiceChannelName = interaction.member.voice.channel.name;
+						const embedError = new EmbedBuilder()
+							.setTitle('🚫 Error Joining Voice')
+							.setColor('#FF5555')
+							.setDescription(
+								`I do not have permission to join the voice channel **${voiceChannelName}** (ID: ${voiceChannelId}). 
+								
+								Please check the permissions for this channel and ensure I have permission to join and speak. 
+								
+								Error Details:
+								**Error Code:** \`VOICE_MISSING_PERMS\`
+								
+								If you need assistance, reach out to the server owner or an administrator.`
+							)
+							.setFooter({ text: 'Empire ❤️' })
+							.setTimestamp();
+
+						try {
+							const userId = interaction.user.id;
+							const user = await client.users.fetch(userId);
+							await user.send({ embeds: [embedError] });
+						} catch (dmError) {
+							console.error('Error sending DM to user:', dmError);
+						}
+
+						await interaction
+							.editReply({
+								content: `I encountered an issue joining the voice channel **${voiceChannelName}** due to missing permissions. Please check the settings. <a:alert:1116984255755599884>`,
+								ephemeral: true,
+							})
+							.catch((e) => {});
+
+						await new Promise((resolve) => setTimeout(resolve, 15000));
+						await interaction.deleteReply().catch((err) => console.error(err));
+
+						return;
+					}
+
 					await interaction
 						.editReply({
 							content: `${lang.msg60} <a:alert:1116984255755599884>`,
@@ -265,9 +349,8 @@ module.exports = {
 					// Mengedit balasan kembali setelah 3 detik
 					await interaction
 						.editReply({
-							content: `Song is not found, please check again the song name/URL or if you put URL playlist, please make it public playlist instead of private playlist
-							
-Note: YouTube links may not work due to restrictions. Please use alternative platforms such as Spotify, SoundCloud, Deezer, or simply provide the name and artist of the songs.`,
+							content:
+								'Song is not found, please check again the song name/URL or if you put URL playlist, please make it public playlist instead of private playlist',
 							ephemeral: true,
 						})
 						.catch((e) => {});
@@ -343,6 +426,48 @@ Note: YouTube links may not work due to restrictions. Please use alternative pla
 						queue.songs.splice(1, 0, lastTrack); // Insert the last track at index 2
 					}
 				} catch (e) {
+					console.log(e);
+
+					if (e.errorCode === 'VOICE_MISSING_PERMS') {
+						const voiceChannelId = interaction.member.voice.channel.id;
+						const voiceChannelName = interaction.member.voice.channel.name;
+						const embedError = new EmbedBuilder()
+							.setTitle('🚫 Error Joining Voice')
+							.setColor('#FF5555')
+							.setDescription(
+								`I do not have permission to join the voice channel **${voiceChannelName}** (ID: ${voiceChannelId}). 
+								
+								Please check the permissions for this channel and ensure I have permission to join and speak. 
+								
+								Error Details:
+								**Error Code:** \`VOICE_MISSING_PERMS\`
+								
+								If you need assistance, reach out to the server owner or an administrator.`
+							)
+							.setFooter({ text: 'Empire ❤️' })
+							.setTimestamp();
+
+						try {
+							const userId = interaction.user.id;
+							const user = await client.users.fetch(userId);
+							await user.send({ embeds: [embedError] });
+						} catch (dmError) {
+							console.error('Error sending DM to user:', dmError);
+						}
+
+						await interaction
+							.editReply({
+								content: `I encountered an issue joining the voice channel **${voiceChannelName}** due to missing permissions. Please check the settings. <a:alert:1116984255755599884>`,
+								ephemeral: true,
+							})
+							.catch((e) => {});
+
+						await new Promise((resolve) => setTimeout(resolve, 15000));
+						await interaction.deleteReply().catch((err) => console.error(err));
+
+						return;
+					}
+
 					await interaction
 						.reply({
 							content: `${lang.msg60} <a:alert:1116984255755599884>`,
