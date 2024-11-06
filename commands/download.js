@@ -1,4 +1,10 @@
-const { ApplicationCommandOptionType, EmbedBuilder } = require('discord.js');
+const {
+	ApplicationCommandOptionType,
+	EmbedBuilder,
+	ButtonBuilder,
+	ActionRowBuilder,
+	ButtonStyle,
+} = require('discord.js');
 const db = require('../mongoDB');
 const fs = require('fs');
 const ytdl = require('@distube/ytdl-core');
@@ -198,6 +204,13 @@ module.exports = {
 
 						const googleDriveLink = fileURL;
 
+						const download = new ButtonBuilder()
+							.setLabel('Download Here!!')
+							.setURL(googleDriveLink)
+							.setStyle(ButtonStyle.Link);
+
+						const Row = new ActionRowBuilder().addComponents(download);
+
 						const embed = new EmbedBuilder()
 							.setTitle(`${songName}`)
 							.setThumbnail(thumbnailURL)
@@ -209,7 +222,7 @@ module.exports = {
 							.setFooter({ text: `Empire ❤️` });
 
 						interaction
-							.editReply({ embeds: [embed] })
+							.editReply({ embeds: [embed], components: [Row] })
 							.then(() => {
 								console.log(`Link sent successfully. name: ${musicUrl} `);
 
