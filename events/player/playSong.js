@@ -32,7 +32,7 @@ module.exports = async (client, queue, song, interaction) => {
 				estimatedTime = `> ${lang.msg146}: \`Live\` <a:live:1118902454646493317>`;
 			} else {
 				estimatedTime = `> ${lang.msg144}: <t:${Math.floor(
-					(Date.now() + song.duration * 1000) / 1000
+					(Date.now() + 10 + song.duration * 1000) / 1000
 				)}:R> <a:loading1:1149363140186882178>`;
 			}
 
@@ -204,8 +204,8 @@ module.exports = async (client, queue, song, interaction) => {
 
 							// Create an embed message
 							const embedError = new EmbedBuilder()
-								.setTitle('🚫 Message Delivery Issue')
-								.setColor('#FF5555') // Use a color code to make the embed visually appealing
+								.setTitle('🚫 Message Delivery Issue ')
+								.setColor('#FF5555')
 								.setDescription(
 									`Hello! I wanted to inform you that I was unable to send messages in the channel **${channelName}** (${channelId}) due to insufficient permissions. 
 							
@@ -216,10 +216,9 @@ module.exports = async (client, queue, song, interaction) => {
 							
 							Thank you for your understanding! 🙏`
 								)
-								.setFooter({ text: 'Empire ❤️' }) // Customized footer text
-								.setTimestamp(); // Adds a timestamp for when the message was sent
+								.setFooter({ text: 'Empire ❤️' })
+								.setTimestamp();
 
-							// Send the embed message to the user via DM
 							await user.send({ embeds: [embedError] });
 						} catch (dmError) {
 							console.error('Error sending DM to user:', dmError);
