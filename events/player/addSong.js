@@ -16,7 +16,7 @@ module.exports = async (client, queue, song) => {
 		.slice(0, position - 1)
 		.reduce((acc, song) => acc + song.duration, 0);
 	let queuePositionString = '';
-	let formattedDuration = totalDuration - queue.currentTime;
+	let formattedDuration = totalDuration - queue.currentTime + 10;
 	let formattedtotalTime = Math.round(formattedDuration);
 
 	const currentTime = Math.floor(Date.now() / 1000);
