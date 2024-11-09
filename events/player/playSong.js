@@ -32,7 +32,7 @@ module.exports = async (client, queue, song, interaction) => {
 				estimatedTime = `> ${lang.msg146}: \`Live\` <a:live:1118902454646493317>`;
 			} else {
 				estimatedTime = `> ${lang.msg144}: <t:${Math.floor(
-					(Date.now() + 10 + song.duration * 1000) / 1000
+					(Date.now() + 13 + song.duration * 1000) / 1000
 				)}:R> <a:loading1:1149363140186882178>`;
 			}
 
