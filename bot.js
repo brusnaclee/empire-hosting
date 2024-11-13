@@ -32,6 +32,11 @@ client.player = new DisTube(client, {
 	emitNewSongOnly: true,
 	emitAddSongWhenCreatingQueue: false,
 	emitAddListWhenCreatingQueue: false,
+	ytdlOptions: {
+		requestOptions: {
+			cookies: cookies,
+		},
+	},
 	plugins: [
 		new SpotifyPlugin(),
 		new SoundCloudPlugin(),
