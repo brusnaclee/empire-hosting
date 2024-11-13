@@ -1,16 +1,12 @@
-const {
-	ApplicationCommandOptionType,
-	EmbedBuilder,
-	ButtonBuilder,
-	ActionRowBuilder,
-	ButtonStyle,
-} = require('discord.js');
+const { ApplicationCommandOptionType, EmbedBuilder } = require('discord.js');
 const db = require('../mongoDB');
 const fs = require('fs');
 const ytdl = require('@distube/ytdl-core');
 const { google } = require('googleapis');
 const youtubeSearch = require('youtube-search-api');
 const scdl = require('soundcloud-downloader').default;
+
+const agent = ytdl.createAgent(JSON.parse(fs.readFileSync('../cookies.json')));
 
 const axios = require('axios');
 
@@ -116,7 +112,7 @@ module.exports = {
 			const drive = google.drive({ version: 'v3', auth });
 
 			// SoundCloud Client ID
-			const CLIENT_ID = 'yLfooVZK5emWPvRLZQlSuGTO8pof6z4t';
+			const CLIENT_ID = 'FVqQoT3N6EFHpKzah6KOfyx1RQHdXIYD';
 
 			// Function untuk mengecek apakah file sudah ada
 			function checkFileExists(fileName) {
@@ -143,7 +139,7 @@ module.exports = {
 			if (ytdl.validateURL(musicUrl)) {
 				// Jika URL adalah YouTube
 				const initialQuality = 'lowestaudio';
-				ytdl(musicUrl, { quality: initialQuality }).pipe(fileStream);
+				ytdl(musicUrl, { quality: initialQuality }, { agent }).pipe(fileStream);
 			} else if (scdl.isValidUrl(musicUrl)) {
 				// Jika URL adalah SoundCloud
 				scdl
@@ -204,13 +200,6 @@ module.exports = {
 
 						const googleDriveLink = fileURL;
 
-						const download = new ButtonBuilder()
-							.setLabel('Download Here!!')
-							.setURL(googleDriveLink)
-							.setStyle(ButtonStyle.Link);
-
-						const Row = new ActionRowBuilder().addComponents(download);
-
 						const embed = new EmbedBuilder()
 							.setTitle(`${songName}`)
 							.setThumbnail(thumbnailURL)
@@ -222,7 +211,7 @@ module.exports = {
 							.setFooter({ text: `Empire ❤️` });
 
 						interaction
-							.editReply({ embeds: [embed], components: [Row] })
+							.editReply({ embeds: [embed] })
 							.then(() => {
 								console.log(`Link sent successfully. name: ${musicUrl} `);
 
