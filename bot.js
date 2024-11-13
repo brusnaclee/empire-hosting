@@ -8,7 +8,7 @@ const config = require('./config.js');
 const fs = require('fs');
 const ytdl = require('@distube/ytdl-core');
 
-const cookies = ytdl.createAgent(JSON.parse(fs.readFileSync('cookies.json')));
+const agent = ytdl.createAgent(JSON.parse(fs.readFileSync('cookies.json')));
 
 const client = new Client({
 	partials: [
@@ -35,15 +35,13 @@ client.player = new DisTube(client, {
 	emitAddListWhenCreatingQueue: false,
 	ytdlOptions: {
 		requestOptions: {
-			cookies: cookies,
+			cookies: agent,
 		},
 	},
 	plugins: [
 		new SpotifyPlugin(),
 		new SoundCloudPlugin(),
-		new YtDlpPlugin({
-			cookies: cookies,
-		}),
+		new YtDlpPlugin(),
 		new DeezerPlugin(),
 	],
 });
@@ -120,4 +118,3 @@ if (config.mongodbURL || process.env.MONGO) {
 } else {
 	console.log(lang.error4);
 }
-
