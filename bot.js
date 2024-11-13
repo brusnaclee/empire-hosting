@@ -4,6 +4,7 @@ const { SpotifyPlugin } = require('@distube/spotify');
 const { SoundCloudPlugin } = require('@distube/soundcloud');
 const { DeezerPlugin } = require('@distube/deezer');
 const { YtDlpPlugin } = require('@distube/yt-dlp');
+const ytdl = require("@distube/ytdl-core");
 const config = require('./config.js');
 const fs = require('fs');
 
