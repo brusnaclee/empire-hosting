@@ -6,10 +6,6 @@ const { DeezerPlugin } = require('@distube/deezer');
 const { YtDlpPlugin } = require('@distube/yt-dlp');
 const config = require('./config.js');
 const fs = require('fs');
-const ytdl = require('@distube/ytdl-core');
-
-const agent = ytdl.createAgent(JSON.parse(fs.readFileSync('cookies.json')));
-
 const client = new Client({
 	partials: [
 		Partials.Channel, // for text channel
@@ -33,15 +29,12 @@ client.player = new DisTube(client, {
 	emitNewSongOnly: true,
 	emitAddSongWhenCreatingQueue: false,
 	emitAddListWhenCreatingQueue: false,
-	ytdlOptions: {
-		requestOptions: {
-			cookies: agent,
-		},
-	},
 	plugins: [
 		new SpotifyPlugin(),
 		new SoundCloudPlugin(),
-		new YtDlpPlugin(),
+		new YtDlpPlugin({
+			ytdlpOptions: ['--cookies', 'cookies.txt'],
+		}),
 		new DeezerPlugin(),
 	],
 });
