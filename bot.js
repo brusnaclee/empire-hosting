@@ -4,11 +4,8 @@ const { SpotifyPlugin } = require('@distube/spotify');
 const { SoundCloudPlugin } = require('@distube/soundcloud');
 const { DeezerPlugin } = require('@distube/deezer');
 const { YtDlpPlugin } = require('@distube/yt-dlp');
-const ytdl = require('@distube/ytdl-core');
 const config = require('./config.js');
 const fs = require('fs');
-
-const agent = ytdl.createAgent(JSON.parse(fs.readFileSync('cookies.json')));
 
 const client = new Client({
 	partials: [
@@ -35,7 +32,9 @@ client.player = new DisTube(client, {
 	emitAddListWhenCreatingQueue: false,
 	ytdlOptions: {
 		requestOptions: {
-			agent: agent,
+			headers: {
+				Cookie: fs.readFileSync('cookies.txt', 'utf8'), // Menggunakan file cookies.txt
+			},
 		},
 	},
 	plugins: [
