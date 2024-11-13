@@ -35,7 +35,7 @@ client.player = new DisTube(client, {
 	emitAddListWhenCreatingQueue: false,
 	ytdlOptions: {
 		requestOptions: {
-			client: agent,
+			agent: agent,
 		},
 	},
 	plugins: [
