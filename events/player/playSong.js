@@ -119,7 +119,7 @@ module.exports = async (client, queue, song, interaction) => {
 			const AddButton = new ButtonBuilder()
 				.setCustomId('AddMusic')
 				.setEmoji('➕')
-				.setStyle(ButtonStyle.Secondary);
+				.setStyle(ButtonStyle.Primary);
 
 			const loopButton = new ButtonBuilder()
 				.setCustomId('Loops')
