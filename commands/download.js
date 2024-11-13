@@ -6,7 +6,7 @@ const { google } = require('googleapis');
 const youtubeSearch = require('youtube-search-api');
 const scdl = require('soundcloud-downloader').default;
 
-const agent = ytdl.createAgent(JSON.parse(fs.readFileSync('../cookies.json')));
+const agent = ytdl.createAgent(JSON.parse(fs.readFileSync('./cookies.json')));
 
 const axios = require('axios');
 
