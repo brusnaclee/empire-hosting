@@ -6,8 +6,9 @@ const { DeezerPlugin } = require('@distube/deezer');
 const { YtDlpPlugin } = require('@distube/yt-dlp');
 const config = require('./config.js');
 const fs = require('fs');
+const ytdl = require('@distube/ytdl-core');
 
-const cookies = JSON.parse(fs.readFileSync('cookies.json', 'utf8'));
+const cookies = ytdl.createAgent(JSON.parse(fs.readFileSync('cookies.json')));
 
 const client = new Client({
 	partials: [
@@ -119,3 +120,4 @@ if (config.mongodbURL || process.env.MONGO) {
 } else {
 	console.log(lang.error4);
 }
+
