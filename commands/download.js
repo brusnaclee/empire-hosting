@@ -6,8 +6,6 @@ const { google } = require('googleapis');
 const youtubeSearch = require('youtube-search-api');
 const scdl = require('soundcloud-downloader').default;
 
-const agent = ytdl.createAgent(JSON.parse(fs.readFileSync('./cookies.json')));
-
 const axios = require('axios');
 
 module.exports = {
@@ -139,7 +137,7 @@ module.exports = {
 			if (ytdl.validateURL(musicUrl)) {
 				// Jika URL adalah YouTube
 				const initialQuality = 'lowestaudio';
-				ytdl(musicUrl, { quality: initialQuality }, { agent }).pipe(fileStream);
+				ytdl(musicUrl, { quality: initialQuality }).pipe(fileStream);
 			} else if (scdl.isValidUrl(musicUrl)) {
 				// Jika URL adalah SoundCloud
 				scdl
