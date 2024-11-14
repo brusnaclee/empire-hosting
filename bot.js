@@ -4,7 +4,7 @@ const { SpotifyPlugin } = require('@distube/spotify');
 const { SoundCloudPlugin } = require('@distube/soundcloud');
 const { DeezerPlugin } = require('@distube/deezer');
 const config = require('./config.js');
-const { YtDlpPlugin } = require('@distube/yt-dlp');
+const { YouTubePlugin } = require('@distube/youtube');
 const fs = require('fs');
 const client = new Client({
 	partials: [
@@ -32,7 +32,7 @@ client.player = new DisTube(client, {
 	plugins: [
 		new SpotifyPlugin(),
 		new SoundCloudPlugin(),
-		new YtDlpPlugin({
+		new YouTubePlugin({
 			cookies: JSON.parse(fs.readFileSync('cookies.json')),
 		}),
 		new DeezerPlugin(),
