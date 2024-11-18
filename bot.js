@@ -3,8 +3,8 @@ const { DisTube } = require('distube');
 const { SpotifyPlugin } = require('@distube/spotify');
 const { SoundCloudPlugin } = require('@distube/soundcloud');
 const { DeezerPlugin } = require('@distube/deezer');
+const { YtDlpPlugin } = require('@distube/yt-dlp');
 const config = require('./config.js');
-const { YouTubePlugin } = require('@distube/youtube');
 const fs = require('fs');
 const client = new Client({
 	partials: [
@@ -29,12 +29,19 @@ client.player = new DisTube(client, {
 	emitNewSongOnly: true,
 	emitAddSongWhenCreatingQueue: false,
 	emitAddListWhenCreatingQueue: false,
+	nsfw: true,
+	ytdlOptions: {
+		highWaterMark: 1024 * 1024 * 64,
+		quality: 'highestaudio',
+		format: 'audioonly',
+		liveBuffer: 60000,
+		dlChunkSize: 1024 * 1024 * 4,
+	},
 	plugins: [
 		new SpotifyPlugin(),
 		new SoundCloudPlugin(),
-		new YouTubePlugin({
-			cookies: JSON.parse(fs.readFileSync('cookies.json')),
-		}),
+		new YtDlpPlugin(),
+		new YouTubePlugin(),
 		new DeezerPlugin(),
 	],
 });
