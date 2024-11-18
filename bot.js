@@ -41,7 +41,6 @@ client.player = new DisTube(client, {
 		new SpotifyPlugin(),
 		new SoundCloudPlugin(),
 		new YtDlpPlugin(),
-		new YouTubePlugin(),
 		new DeezerPlugin(),
 	],
 });
