@@ -76,7 +76,7 @@ module.exports = async (client, queue, oldState) => {
 	const key = client.config.GEMINI;
 
 	const data = {
-		model: 'gpt-3.5-turbo',
+		model: 'gpt-4o',
 		messages: [
 			{
 				role: 'user',
