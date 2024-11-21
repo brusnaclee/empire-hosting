@@ -30,7 +30,7 @@ module.exports = {
 				const key = client.config.GEMINI;
 
 				const data = {
-					model: 'gemini-1.5-flash-latest',
+					model: 'gpt-4o',
 					messages: [
 						{
 							role: 'system',
