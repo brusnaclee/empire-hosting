@@ -66,7 +66,7 @@ Empire Music Control Panel Button Instructions:
 
 Empire commands information:
 
-/help - It help you to get information about bot and commands. Usage = /help or /help (ask something)
+/help - It help you to get information about Apps and commands. Usage = /help or /help (ask something)
 
 /autoplay - Turn the queue's autoplay on or off. Usage = /autoplay
 
@@ -88,9 +88,9 @@ Empire commands information:
 
 /filter - Apply an audio filter to the current music. Usage /filter it will show list of the filters.
 
-/invite - Invite bot to your server. Usage /invite
+/invite - Invite Apps to your server. Usage /invite
 
-/language - It allows you to set the language of the bot. Usage /language it will show list of the support language, currently only support 16 language
+/language - It allows you to set the language of the Apps. Usage /language it will show list of the support language, currently only support 16 language
 
 /loop - Turns the music loop mode on or off. Usage /loop it will show loop list such as queue loop, now playing loop or stop the loop.
 
@@ -102,7 +102,7 @@ Empire commands information:
 
 /pause - Stops playing the currently playing music. Usage /pause
 
-/ping - It provides information about the bot's response time. Usage /ping
+/ping - It provides information about the Apps response time. Usage /ping
 
 /play music - Play music from other platforms. Write your music name or URL. Usage /play music Despacito
 
@@ -140,7 +140,7 @@ Empire commands information:
 
 /skip - Switches the music being played. Usage /skip or /skip (how much wanna skip) /skip 20
 
-/statistic - View the bot statistics. Usage /statistic
+/statistic - View the Apps statistics. Usage /statistic
 
 /stop - Stopping the music. Usage /stop
 
@@ -171,7 +171,7 @@ Now this is the question from the <@${interaction.user.id}>: ${chatbot}
 					.then((response) => {
 						const reply = response.data.choices[0].message.content;
 						const embed = new EmbedBuilder()
-							.setTitle(`Empire Chatbot`)
+							.setTitle(`Empire AI`)
 							.setDescription(`> ${reply}`)
 							.setColor(client.config.embedColor)
 							.setTimestamp();
