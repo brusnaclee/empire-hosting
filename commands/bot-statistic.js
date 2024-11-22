@@ -20,16 +20,19 @@ module.exports = {
 			const ping = `${client.ws.ping}ms`;
 
 			// Statistik Musik (Distube)
-			let currentlyPlaying = 'None';
-			let totalPlaytime = '0h 0m';
-			let queueSize = 0;
+let currentlyPlaying = 'None';
+let totalPlaytime = '0h 0m';
+let queueSize = 0;
 
-			const queue = client.distube.getQueue(interaction.guild.id); // Ambil antrean
-			if (queue) {
-				currentlyPlaying = queue.songs[0]?.name || 'None';
-				queueSize = queue.songs.length - 1;
-				totalPlaytime = queue.formattedDuration || '0h 0m';
-			}
+if (client.distube) {
+    const queue = client.distube.getQueue(interaction.guild.id);
+    if (queue) {
+        currentlyPlaying = queue.songs[0]?.name || 'None';
+        queueSize = queue.songs.length - 1;
+        totalPlaytime = queue.formattedDuration || '0h 0m';
+    }
+}
+
 
 			// Informasi Hardware dan Software
 			const osInfo = execSync('lsb_release -d', { encoding: 'utf-8' }).split(':')[1].trim();
