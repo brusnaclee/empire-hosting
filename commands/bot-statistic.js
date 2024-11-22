@@ -100,6 +100,14 @@ module.exports = {
 						return;
 					}
 
+					// Remove the line containing 'Flags' from the lscpu output
+					const cpuInfoLines = cpuInfo
+						.split('\n')
+						.filter((line) => !line.startsWith('Flags:'));
+
+					// Join the remaining lines back together into a string
+					const filteredCpuInfo = cpuInfoLines.join('\n');
+
 					// General Embed
 					const embed = new EmbedBuilder()
 						.setTitle(
@@ -111,27 +119,31 @@ module.exports = {
 						.setColor(client.config.embedColor)
 						.setDescription(
 							`**General Information:\n\n
-• Owner: \`brusnaclee#0\`
-• Developer: \`brusnaclee#0\`
-• User Count: \`${totalMembers || 0}\`
-• Server Count: \`${totalGuilds || 0}\`
-• Channel Count: \`${totalChannels || 0}\`
-• Shard Count: \`${shardSize || 0}\`
-• Connected Voice: \`${voiceConnections}\`
-• Command Count: \`${client.commands.map((c) => c.name).length}\`
-• Operation Time: <t:${Math.floor(Number(Date.now() - client.uptime) / 1000)}:R>
-• Ping: \`${client.ws.ping} MS\`
-• Invite Bot: [Click](${config.botInvite})
-• Website Bot: [Click](${config.supportServer})
-${
-	config.sponsor.status ? `• Sponsor: [Click](${config.sponsor.url})` : ''
-}
-${
-	config.voteManager.status
-		? `• Vote: [Click](${config.voteManager.vote_url})`
-		: ''
-}
-**`
+            • Owner: \`brusnaclee#0\`
+            • Developer: \`brusnaclee#0\`
+            • User Count: \`${totalMembers || 0}\`
+            • Server Count: \`${totalGuilds || 0}\`
+            • Channel Count: \`${totalChannels || 0}\`
+            • Shard Count: \`${shardSize || 0}\`
+            • Connected Voice: \`${voiceConnections}\`
+            • Command Count: \`${client.commands.map((c) => c.name).length}\`
+            • Operation Time: <t:${Math.floor(
+							Number(Date.now() - client.uptime) / 1000
+						)}:R>
+            • Ping: \`${client.ws.ping} MS\`
+            • Invite Bot: [Click](${config.botInvite})
+            • Website Bot: [Click](${config.supportServer})
+            ${
+							config.sponsor.status
+								? `• Sponsor: [Click](${config.sponsor.url})`
+								: ''
+						}
+            ${
+							config.voteManager.status
+								? `• Vote: [Click](${config.voteManager.vote_url})`
+								: ''
+						}
+            **`
 						);
 
 					// Buttons
@@ -154,53 +166,61 @@ ${
 					interaction.editReply({ embeds: [embed], components: [buttonRow] });
 
 					// Collector for button interactions
-					const collector = interaction.channel.createMessageComponentCollector({
-						filter: (i) => i.user.id === interaction.user.id,
-						time: 120000, // 2 minutes
-					});
+					const collector = interaction.channel.createMessageComponentCollector(
+						{
+							filter: (i) => i.user.id === interaction.user.id,
+							time: 120000, // 2 minutes
+						}
+					);
 
 					collector.on('collect', async (i) => {
 						if (i.customId === 'general_info') {
 							// Update embed to General Information
 							embed.setDescription(
 								`**General Information:\n\n
-• Owner: \`brusnaclee#0\`
-• Developer: \`brusnaclee#0\`
-• User Count: \`${totalMembers || 0}\`
-• Server Count: \`${totalGuilds || 0}\`
-• Channel Count: \`${totalChannels || 0}\`
-• Shard Count: \`${shardSize || 0}\`
-• Connected Voice: \`${voiceConnections}\`
-• Command Count: \`${client.commands.map((c) => c.name).length}\`
-• Operation Time: <t:${Math.floor(Number(Date.now() - client.uptime) / 1000)}:R>
-• Ping: \`${client.ws.ping} MS\`
-• Invite Bot: [Click](${config.botInvite})
-• Website Bot: [Click](${config.supportServer})
-${
-	config.sponsor.status ? `• Sponsor: [Click](${config.sponsor.url})` : ''
-}
-${
-	config.voteManager.status
-		? `• Vote: [Click](${config.voteManager.vote_url})`
-		: ''
-}
-**`
+                • Owner: \`brusnaclee#0\`
+                • Developer: \`brusnaclee#0\`
+                • User Count: \`${totalMembers || 0}\`
+                • Server Count: \`${totalGuilds || 0}\`
+                • Channel Count: \`${totalChannels || 0}\`
+                • Shard Count: \`${shardSize || 0}\`
+                • Connected Voice: \`${voiceConnections}\`
+                • Command Count: \`${
+									client.commands.map((c) => c.name).length
+								}\`
+                • Operation Time: <t:${Math.floor(
+									Number(Date.now() - client.uptime) / 1000
+								)}:R>
+                • Ping: \`${client.ws.ping} MS\`
+                • Invite Bot: [Click](${config.botInvite})
+                • Website Bot: [Click](${config.supportServer})
+                ${
+									config.sponsor.status
+										? `• Sponsor: [Click](${config.sponsor.url})`
+										: ''
+								}
+                ${
+									config.voteManager.status
+										? `• Vote: [Click](${config.voteManager.vote_url})`
+										: ''
+								}
+                **`
 							);
 							await i.update({ embeds: [embed] });
 						} else if (i.customId === 'hardware_info') {
 							// Update embed to Hardware Information
 							embed.setDescription(
 								`**Hardware Information:\n\n
-• CPU Info: \`${cpuInfo.trim()}\`
-• Host Memory Usage: \`${usedMemory} MB\`
-• Bot Memory Usage: \`${(
+                • CPU Info: \`${filteredCpuInfo.trim()}\`
+                • Host Memory Usage: \`${usedMemory} MB\`
+                • Bot Memory Usage: \`${(
 									process.memoryUsage().rss /
 									1024 /
 									1024
 								).toFixed(2)} MB\`
-• Architecture: \`${os.arch()}\`
-• OS Version: \`${osVersion}\`
-**`
+                • Architecture: \`${os.arch()}\`
+                • OS Version: \`${osVersion}\`
+                **`
 							);
 							await i.update({ embeds: [embed] });
 						}
