@@ -22,18 +22,57 @@ module.exports = {
 				ButtonStyle,
 			} = require('discord.js');
 
-			// Initialize bot stats
-			let totalGuilds = client.guilds.cache.size;
-			let totalMembers = client.guilds.cache.reduce(
-				(acc, guild) => acc + guild.memberCount,
-				0
-			);
-			let totalChannels = client.guilds.cache.reduce(
-				(acc, guild) => acc + guild.channels.cache.size,
-				0
-			);
-			let shardSize = 1;
-			let voiceConnections = client?.voice?.adapters?.size || 0;
+			let totalGuilds;
+			let totalMembers;
+			let totalChannels;
+			let shardSize;
+			let voiceConnections;
+			if (config.shardManager.shardStatus == true) {
+				const promises = [
+					client.shard.fetchClientValues('guilds.cache.size'),
+					client.shard.broadcastEval((c) =>
+						c.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0)
+					),
+					client.shard.broadcastEval((c) =>
+						c.guilds.cache.reduce(
+							(acc, guild) => acc + guild.channels.cache.size,
+							0
+						)
+					),
+					client.shard.broadcastEval((c) => c.voice?.adapters?.size || 0),
+				];
+				await Promise.all(promises).then((results) => {
+					totalGuilds = results[0].reduce(
+						(acc, guildCount) => acc + guildCount,
+						0
+					);
+					totalMembers = results[1].reduce(
+						(acc, memberCount) => acc + memberCount,
+						0
+					);
+					totalChannels = results[2].reduce(
+						(acc, channelCount) => acc + channelCount,
+						0
+					);
+					shardSize = client.shard.count;
+					voiceConnections = results[3].reduce(
+						(acc, voiceCount) => acc + voiceCount,
+						0
+					);
+				});
+			} else {
+				totalGuilds = client.guilds.cache.size;
+				totalMembers = client.guilds.cache.reduce(
+					(acc, guild) => acc + guild.memberCount,
+					0
+				);
+				totalChannels = client.guilds.cache.reduce(
+					(acc, guild) => acc + guild.channels.cache.size,
+					0
+				);
+				shardSize = 1;
+				voiceConnections = client?.voice?.adapters?.size || 0;
+			}
 
 			// Fetch memory usage
 			const usedMemory = ((os.totalmem() - os.freemem()) / 1024 / 1024).toFixed(
