@@ -1,108 +1,180 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const config = require('../config.js');
+const db = require('../mongoDB');
+const os = require('os');
+const { exec } = require('child_process');
 
 module.exports = {
 	name: 'statistic',
 	description: 'View the bot statistics.',
 	options: [],
 	run: async (client, interaction) => {
+		let lang = await db?.musicbot
+			?.findOne({ guildID: interaction.guild.id })
+			.catch(() => {});
+		lang = lang?.language || client.language;
+		lang = require(`../languages/${lang}.js`);
+
 		try {
-			await interaction.deferReply();
+			const {
+				ActionRowBuilder,
+				ButtonBuilder,
+				EmbedBuilder,
+				ButtonStyle,
+			} = require('discord.js');
 
-			// Informasi Umum
-			const totalGuilds = client.guilds.cache.size;
-			const totalMembers = client.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0);
-			const totalChannels = client.guilds.cache.reduce((acc, guild) => acc + guild.channels.cache.size, 0);
-			const shardSize = client.shard?.count || 1;
-			const voiceConnections = client.voice?.adapters?.size || 0;
-			const uptime = `<t:${Math.floor(Number(Date.now() - client.uptime) / 1000)}:R>`;
-			const ping = `${client.ws.ping}ms`;
+			// Initialize bot stats
+			let totalGuilds = client.guilds.cache.size;
+			let totalMembers = client.guilds.cache.reduce(
+				(acc, guild) => acc + guild.memberCount,
+				0
+			);
+			let totalChannels = client.guilds.cache.reduce(
+				(acc, guild) => acc + guild.channels.cache.size,
+				0
+			);
+			let shardSize = 1;
+			let voiceConnections = client?.voice?.adapters?.size || 0;
 
-			// Embed General Information
-			const generalEmbed = new EmbedBuilder()
-				.setTitle(
-					`<a:Statisticreverse:1117043433022947438> ${client.user.username} Statistics <a:Statistic:1117010987040645220>`
-				)
-				.setColor(client.config.embedColor)
-				.setDescription(
-					`**General Information:**\n\n` +
-					`\`\`\`\n` +
-					`• Owner: brusnaclee#0\n` +
-					`• Developer: brusnaclee#0\n` +
-					`• User Count: ${totalMembers || 0}\n` +
-					`• Server Count: ${totalGuilds || 0}\n` +
-					`• Channel Count: ${totalChannels || 0}\n` +
-					`• Shard Count: ${shardSize || 0}\n` +
-					`• Connected Voice: ${voiceConnections}\n` +
-					`• Command Count: ${client.commands.map((c) => c.name).length}\n` +
-					`• Operation Time: ${uptime}\n` +
-					`• Ping: ${ping}\n\n` +
-					`• Invite Bot: [Click](${client.config.botInvite})\n` +
-					`• Website Bot: [Click](${client.config.supportServer})\n` +
-					(client.config.sponsor.status
-						? `• Sponsor: [Click](${client.config.sponsor.url})\n`
-						: '') +
-					(client.config.voteManager.status
-						? `• Vote: [Click](${client.config.voteManager.vote_url})\n`
-						: '') +
-					`\`\`\``
+			// Fetch memory usage
+			const usedMemory = ((os.totalmem() - os.freemem()) / 1024 / 1024).toFixed(
+				2
+			);
+
+			// Execute Linux commands for detailed OS and CPU info
+			exec('lsb_release -a', (error, stdout) => {
+				if (error) {
+					console.error(error);
+					return;
+				}
+				const osInfoLines = stdout.split('\n');
+				const descriptionLine = osInfoLines.find((line) =>
+					line.startsWith('Description:')
 				);
+				const osVersion = descriptionLine
+					? descriptionLine.split(':')[1].trim()
+					: 'Unknown';
 
-			// Tombol untuk Beralih ke Hardware/Software
-			const hardwareButton = new ButtonBuilder()
-				.setCustomId('hardware_info')
-				.setLabel('Hardware & Software Information')
-				.setStyle(ButtonStyle.Success);
+				exec('lscpu', (error, cpuInfo) => {
+					if (error) {
+						console.error(error);
+						return;
+					}
 
-			const buttonRow = new ActionRowBuilder().addComponents(hardwareButton);
-
-			// Kirim Embed dan Tombol
-			await interaction.editReply({ embeds: [generalEmbed], components: [buttonRow] });
-
-			// Event Handler untuk Tombol
-			const filter = (i) => i.user.id === interaction.user.id;
-			const collector = interaction.channel.createMessageComponentCollector({
-				filter,
-				time: 120000, // 2 menit
-			});
-
-			collector.on('collect', async (i) => {
-				if (i.customId === 'hardware_info') {
-					// Hardware & Software Embed
-					const os = require('os');
-					const { version: discordJsVersion } = require('discord.js');
-					const nodeVersion = process.version;
-					const memoryUsage = (process.memoryUsage().rss / 1024 / 1024).toFixed(2);
-					const totalMemory = (os.totalmem() / 1024 / 1024).toFixed(2);
-
-					const hardwareEmbed = new EmbedBuilder()
+					// General Embed
+					const embed = new EmbedBuilder()
 						.setTitle(
-							`<a:Statisticreverse:1117043433022947438> ${client.user.username} Hardware & Software <a:Statistic:1117010987040645220>`
+							`<a:Statisticreverse:1117043433022947438> ${client.user.username} Statistics <a:Statistic:1117010987040645220>`
+						)
+						.setThumbnail(
+							client.user.displayAvatarURL({ dynamic: true, size: 1024 })
 						)
 						.setColor(client.config.embedColor)
 						.setDescription(
-							`**Hardware & Software Information:**\n\n\`\`\`\n` +
-							`• OS: ${os.platform()} (${os.version()})\n` +
-							`• Architecture: ${os.arch()}\n` +
-							`• CPU: ${os.cpus()[0].model}\n` +
-							`• Memory Usage: ${memoryUsage}MB / ${totalMemory}MB\n\n` +
-							`• Node.js Version: ${nodeVersion}\n` +
-							`• Discord.js Version: ${discordJsVersion}\n` +
-							`• Developer: brusnaclee#0\n` +
-							`\`\`\``
+							`**General Information:\n\n
+• Owner: \`brusnaclee#0\`
+• Developer: \`brusnaclee#0\`
+• User Count: \`${totalMembers || 0}\`
+• Server Count: \`${totalGuilds || 0}\`
+• Channel Count: \`${totalChannels || 0}\`
+• Shard Count: \`${shardSize || 0}\`
+• Connected Voice: \`${voiceConnections}\`
+• Command Count: \`${client.commands.map((c) => c.name).length}\`
+• Operation Time: <t:${Math.floor(Number(Date.now() - client.uptime) / 1000)}:R>
+• Ping: \`${client.ws.ping} MS\`
+• Invite Bot: [Click](${config.botInvite})
+• Website Bot: [Click](${config.supportServer})
+${
+	config.sponsor.status ? `• Sponsor: [Click](${config.sponsor.url})` : ''
+}
+${
+	config.voteManager.status
+		? `• Vote: [Click](${config.voteManager.vote_url})`
+		: ''
+}
+**`
 						);
 
-					await i.update({ embeds: [hardwareEmbed] });
-				}
-			});
+					// Buttons
+					const generalButton = new ButtonBuilder()
+						.setCustomId('general_info')
+						.setLabel('General Information')
+						.setStyle(ButtonStyle.Success);
 
-			collector.on('end', async () => {
-				await interaction.editReply({ components: [] }).catch(console.error);
+					const hardwareButton = new ButtonBuilder()
+						.setCustomId('hardware_info')
+						.setLabel('Hardware Information')
+						.setStyle(ButtonStyle.Success);
+
+					const buttonRow = new ActionRowBuilder().addComponents(
+						generalButton,
+						hardwareButton
+					);
+
+					// Send initial embed with buttons
+					interaction.editReply({ embeds: [embed], components: [buttonRow] });
+
+					// Collector for button interactions
+					const collector = interaction.channel.createMessageComponentCollector({
+						filter: (i) => i.user.id === interaction.user.id,
+						time: 120000, // 2 minutes
+					});
+
+					collector.on('collect', async (i) => {
+						if (i.customId === 'general_info') {
+							// Update embed to General Information
+							embed.setDescription(
+								`**General Information:\n\n
+• Owner: \`brusnaclee#0\`
+• Developer: \`brusnaclee#0\`
+• User Count: \`${totalMembers || 0}\`
+• Server Count: \`${totalGuilds || 0}\`
+• Channel Count: \`${totalChannels || 0}\`
+• Shard Count: \`${shardSize || 0}\`
+• Connected Voice: \`${voiceConnections}\`
+• Command Count: \`${client.commands.map((c) => c.name).length}\`
+• Operation Time: <t:${Math.floor(Number(Date.now() - client.uptime) / 1000)}:R>
+• Ping: \`${client.ws.ping} MS\`
+• Invite Bot: [Click](${config.botInvite})
+• Website Bot: [Click](${config.supportServer})
+${
+	config.sponsor.status ? `• Sponsor: [Click](${config.sponsor.url})` : ''
+}
+${
+	config.voteManager.status
+		? `• Vote: [Click](${config.voteManager.vote_url})`
+		: ''
+}
+**`
+							);
+							await i.update({ embeds: [embed] });
+						} else if (i.customId === 'hardware_info') {
+							// Update embed to Hardware Information
+							embed.setDescription(
+								`**Hardware Information:\n\n
+• CPU Info: \`${cpuInfo.trim()}\`
+• Host Memory Usage: \`${usedMemory} MB\`
+• Bot Memory Usage: \`${(
+									process.memoryUsage().rss /
+									1024 /
+									1024
+								).toFixed(2)} MB\`
+• Architecture: \`${os.arch()}\`
+• OS Version: \`${osVersion}\`
+**`
+							);
+							await i.update({ embeds: [embed] });
+						}
+					});
+
+					collector.on('end', () => {
+						interaction.editReply({ components: [] }).catch(console.error);
+					});
+				});
 			});
-		} catch (error) {
-			console.error(error);
+		} catch (e) {
+			console.error(e);
 			await interaction.editReply({
-				content: 'An error occurred while retrieving statistics.',
-				ephemeral: true,
+				content: 'An error occurred while fetching statistics.',
 			});
 		}
 	},
