@@ -21,6 +21,7 @@ module.exports = {
 				EmbedBuilder,
 				ButtonStyle,
 			} = require('discord.js');
+			await interaction.deferReply();
 
 			let totalGuilds;
 			let totalMembers;
