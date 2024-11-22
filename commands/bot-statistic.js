@@ -2,6 +2,8 @@ const { exec } = require('child_process');
 const os = require('os');
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const config = require('../config.js');
+const db = require('../mongoDB');
+
 
 module.exports = {
     name: 'statistic',
