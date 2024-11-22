@@ -108,6 +108,15 @@ module.exports = {
 					// Join the remaining lines back together into a string
 					const filteredCpuInfo = cpuInfoLines.join('\n');
 
+					// Parse CPU information into a more readable format
+					const cpuFormatted = filteredCpuInfo
+						.split('\n')
+						.map((line) => {
+							const [key, ...value] = line.split(':');
+							return `**${key.trim()}**: \`${value.join(':').trim()}\``;
+						})
+						.join('\n');
+
 					// General Embed
 					const embed = new EmbedBuilder()
 						.setTitle(
@@ -211,7 +220,7 @@ module.exports = {
 							// Update embed to Hardware Information
 							embed.setDescription(
 								`**Hardware Information:\n\n
-                • CPU Info: \`${filteredCpuInfo.trim()}\`
+                • CPU Info:\n\`\`\`${cpuFormatted}\`\`\`
                 • Host Memory Usage: \`${usedMemory} MB\`
                 • Bot Memory Usage: \`${(
 									process.memoryUsage().rss /
@@ -220,6 +229,8 @@ module.exports = {
 								).toFixed(2)} MB\`
                 • Architecture: \`${os.arch()}\`
                 • OS Version: \`${osVersion}\`
+                • Node.js Version: \`${process.version}\`
+                • Discord.js Version: \`${require('discord.js').version}\`
                 **`
 							);
 							await i.update({ embeds: [embed] });
