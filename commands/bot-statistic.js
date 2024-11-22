@@ -1,6 +1,4 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const os = require('os');
-const { execSync } = require('child_process');
 
 module.exports = {
 	name: 'statistic',
@@ -19,54 +17,46 @@ module.exports = {
 			const uptime = `<t:${Math.floor(Number(Date.now() - client.uptime) / 1000)}:R>`;
 			const ping = `${client.ws.ping}ms`;
 
-			// Statistik Musik (Distube)
-let currentlyPlaying = 'None';
-let totalPlaytime = '0h 0m';
-let queueSize = 0;
-
-if (client.distube) {
-    const queue = client.distube.getQueue(interaction.guild.id);
-    if (queue) {
-        currentlyPlaying = queue.songs[0]?.name || 'None';
-        queueSize = queue.songs.length - 1;
-        totalPlaytime = queue.formattedDuration || '0h 0m';
-    }
-}
-
-
-			// Informasi Hardware dan Software
-			const osInfo = execSync('lsb_release -d', { encoding: 'utf-8' }).split(':')[1].trim();
-			const cpuInfo = execSync('lscpu | grep "Model name:"', { encoding: 'utf-8' }).split(':')[1].trim();
-			const memoryUsage = (process.memoryUsage().rss / 1024 / 1024).toFixed(2);
-			const totalMemory = (os.totalmem() / 1024 / 1024).toFixed(2);
-			const nodeVersion = process.version;
-			const discordJsVersion = require('discord.js').version;
-
-			// Embed Utama
-			const embed = new EmbedBuilder()
-				.setTitle(`${client.user.username} Statistics`)
+			// Embed General Information
+			const generalEmbed = new EmbedBuilder()
+				.setTitle(
+					`<a:Statisticreverse:1117043433022947438> ${client.user.username} Statistics <a:Statistic:1117010987040645220>`
+				)
 				.setColor(client.config.embedColor)
-				.setThumbnail(client.user.displayAvatarURL({ dynamic: true }))
-				.setTimestamp()
 				.setDescription(
-					'**Use the buttons below to view detailed statistics.**'
+					`**General Information:**\n\n` +
+					`\`\`\`\n` +
+					`• Owner: brusnaclee#0\n` +
+					`• Developer: brusnaclee#0\n` +
+					`• User Count: ${totalMembers || 0}\n` +
+					`• Server Count: ${totalGuilds || 0}\n` +
+					`• Channel Count: ${totalChannels || 0}\n` +
+					`• Shard Count: ${shardSize || 0}\n` +
+					`• Connected Voice: ${voiceConnections}\n` +
+					`• Command Count: ${client.commands.map((c) => c.name).length}\n` +
+					`• Operation Time: ${uptime}\n` +
+					`• Ping: ${ping}\n\n` +
+					`• Invite Bot: [Click](${client.config.botInvite})\n` +
+					`• Website Bot: [Click](${client.config.supportServer})\n` +
+					(client.config.sponsor.status
+						? `• Sponsor: [Click](${client.config.sponsor.url})\n`
+						: '') +
+					(client.config.voteManager.status
+						? `• Vote: [Click](${client.config.voteManager.vote_url})\n`
+						: '') +
+					`\`\`\``
 				);
 
-			// Tombol
-			const generalButton = new ButtonBuilder()
-				.setCustomId('general_info')
-				.setLabel('General Information')
-				.setStyle(ButtonStyle.Success);
-
+			// Tombol untuk Beralih ke Hardware/Software
 			const hardwareButton = new ButtonBuilder()
 				.setCustomId('hardware_info')
 				.setLabel('Hardware & Software Information')
 				.setStyle(ButtonStyle.Success);
 
-			const buttonRow = new ActionRowBuilder().addComponents(generalButton, hardwareButton);
+			const buttonRow = new ActionRowBuilder().addComponents(hardwareButton);
 
-			// Kirim Embed dengan Tombol
-			await interaction.editReply({ embeds: [embed], components: [buttonRow] });
+			// Kirim Embed dan Tombol
+			await interaction.editReply({ embeds: [generalEmbed], components: [buttonRow] });
 
 			// Event Handler untuk Tombol
 			const filter = (i) => i.user.id === interaction.user.id;
@@ -76,42 +66,32 @@ if (client.distube) {
 			});
 
 			collector.on('collect', async (i) => {
-				if (i.customId === 'general_info') {
-					embed.setDescription(
-						`**General Information**\n\n\`\`\`
-• Owner: brusnaclee#0
-• Developer: brusnaclee#0
-• User Count: ${totalMembers || 0}
-• Server Count: ${totalGuilds || 0}
-• Channel Count: ${totalChannels || 0}
-• Shard Count: ${shardSize || 0}
-• Connected Voice: ${voiceConnections}
-• Command Count: ${client.commands.map((c) => c.name).length}
-• Operation Time: ${uptime}
-• Ping: ${ping}
-• Invite Bot: [Click](${client.config.botInvite})
-• Website bot: [Click](${client.config.supportServer})
-\`\`\`
-**Currently Playing: ${currentlyPlaying}**
-**Total Playtime: ${totalPlaytime}**
-**Songs in Queue: ${queueSize}**
-`
-					);
-					await i.update({ embeds: [embed] });
-				} else if (i.customId === 'hardware_info') {
-					embed.setDescription(
-						`**Hardware & Software Information**\n\n\`\`\`
-• OS: ${osInfo}
-• Architecture: ${os.arch()}
-• CPU: ${cpuInfo}
-• Memory Usage: ${memoryUsage}MB / ${totalMemory}MB
+				if (i.customId === 'hardware_info') {
+					// Hardware & Software Embed
+					const os = require('os');
+					const { version: discordJsVersion } = require('discord.js');
+					const nodeVersion = process.version;
+					const memoryUsage = (process.memoryUsage().rss / 1024 / 1024).toFixed(2);
+					const totalMemory = (os.totalmem() / 1024 / 1024).toFixed(2);
 
-• Node.js Version: ${nodeVersion}
-• Discord.js Version: ${discordJsVersion}
-• Developer: brusnaclee#0
-\`\`\``
-					);
-					await i.update({ embeds: [embed] });
+					const hardwareEmbed = new EmbedBuilder()
+						.setTitle(
+							`<a:Statisticreverse:1117043433022947438> ${client.user.username} Hardware & Software <a:Statistic:1117010987040645220>`
+						)
+						.setColor(client.config.embedColor)
+						.setDescription(
+							`**Hardware & Software Information:**\n\n\`\`\`\n` +
+							`• OS: ${os.platform()} (${os.version()})\n` +
+							`• Architecture: ${os.arch()}\n` +
+							`• CPU: ${os.cpus()[0].model}\n` +
+							`• Memory Usage: ${memoryUsage}MB / ${totalMemory}MB\n\n` +
+							`• Node.js Version: ${nodeVersion}\n` +
+							`• Discord.js Version: ${discordJsVersion}\n` +
+							`• Developer: brusnaclee#0\n` +
+							`\`\`\``
+						);
+
+					await i.update({ embeds: [hardwareEmbed] });
 				}
 			});
 
