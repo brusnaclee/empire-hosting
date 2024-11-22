@@ -57,7 +57,7 @@ module.exports = {
 					? descriptionLine.split(':')[1].trim()
 					: 'Unknown';
 
-				exec('lscpu', (error, cpuInfo) => {
+				exec('lscpu | grep -v 'Flags'', (error, cpuInfo) => {
 					if (error) {
 						console.error(error);
 						return;
