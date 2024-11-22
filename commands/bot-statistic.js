@@ -1,7 +1,8 @@
 const config = require('../config.js');
 const db = require('../mongoDB');
 const os = require('os');
-const { exec } = require('child_process'); // Menambahkan child process
+const { exec } = require('child_process');
+
 module.exports = {
 	name: 'statistic',
 	description: 'View the bot statistics.',
@@ -10,9 +11,10 @@ module.exports = {
 	run: async (client, interaction) => {
 		let lang = await db?.musicbot
 			?.findOne({ guildID: interaction.guild.id })
-			.catch((e) => {});
+			.catch(() => {});
 		lang = lang?.language || client.language;
 		lang = require(`../languages/${lang}.js`);
+
 		try {
 			const {
 				ActionRowBuilder,
@@ -20,12 +22,10 @@ module.exports = {
 				EmbedBuilder,
 				ButtonStyle,
 			} = require('discord.js');
-			let totalGuilds;
-			let totalMembers;
-			let totalChannels;
-			let shardSize;
-			let voiceConnections;
-			if (config.shardManager.shardStatus == true) {
+
+			let totalGuilds, totalMembers, totalChannels, shardSize, voiceConnections;
+
+			if (config.shardManager.shardStatus) {
 				const promises = [
 					client.shard.fetchClientValues('guilds.cache.size'),
 					client.shard.broadcastEval((c) =>
@@ -39,24 +39,13 @@ module.exports = {
 					),
 					client.shard.broadcastEval((c) => c.voice?.adapters?.size || 0),
 				];
+
 				await Promise.all(promises).then((results) => {
-					totalGuilds = results[0].reduce(
-						(acc, guildCount) => acc + guildCount,
-						0
-					);
-					totalMembers = results[1].reduce(
-						(acc, memberCount) => acc + memberCount,
-						0
-					);
-					totalChannels = results[2].reduce(
-						(acc, channelCount) => acc + channelCount,
-						0
-					);
+					totalGuilds = results[0].reduce((acc, count) => acc + count, 0);
+					totalMembers = results[1].reduce((acc, count) => acc + count, 0);
+					totalChannels = results[2].reduce((acc, count) => acc + count, 0);
 					shardSize = client.shard.count;
-					voiceConnections = results[3].reduce(
-						(acc, voiceCount) => acc + voiceCount,
-						0
-					);
+					voiceConnections = results[3].reduce((acc, count) => acc + count, 0);
 				});
 			} else {
 				totalGuilds = client.guilds.cache.size;
@@ -72,204 +61,69 @@ module.exports = {
 				voiceConnections = client?.voice?.adapters?.size || 0;
 			}
 
-			await interaction.deferReply({
-				content: 'loading',
-			});
+			await interaction.deferReply({ content: 'loading...' });
 
 			const usedMemory = ((os.totalmem() - os.freemem()) / 1024 / 1024).toFixed(
 				2
 			);
+			const totalMemory = (os.totalmem() / 1024 / 1024).toFixed(2);
+			const freeMemory = (os.freemem() / 1024 / 1024).toFixed(2);
+			const botMemoryUsage = (process.memoryUsage().rss / 1024 / 1024).toFixed(
+				2
+			);
 
-			exec('lsb_release -a', (error, stdout, stderr) => {
-				if (error) {
-					console.error(`exec error: ${error}`);
-					return;
-				}
-				const osInfoLines = stdout.trim().split('\n'); // Pisahkan baris dalam output menjadi array
-				const descriptionLine = osInfoLines.find((line) =>
-					line.startsWith('Description:')
-				); // Cari baris yang mengandung informasi Description
-				const osVersion = descriptionLine
-					? descriptionLine.split(':')[1].trim()
-					: 'Unknown'; // Ambil informasi Description jika ditemukan
+			// Gather OS information
+			exec('lsb_release -a', (error, stdout) => {
+				const osInfo = error
+					? 'Unknown OS'
+					: stdout.split('Description:')[1]?.trim() || 'Unknown OS';
 
-				// Menjalankan perintah lscpu menggunakan child process
-				exec('lscpu', (error, stdout, stderr) => {
-					if (error) {
-						console.error(`exec error: ${error}`);
-						return;
-					}
-					const cpuInfoOutput = stdout; // Mengambil output dari lscpu
-
-					// Mencocokkan informasi yang dibutuhkan menggunakan regex
-					const regexTotalCPU = /CPU\(s\):\s+(\d+)/g;
-					const regexModelName = /Model name:\s+(.*)/g;
-					const regexCoresPerSocket = /Core\(s\) per socket:\s+(\d+)/g;
-					const regexScalingMHz = /CPU\(s\) scaling MHz:\s+(\d+)/g;
-					const regexMaxMHz = /CPU max MHz:\s+([\d.]+)/g;
-					const regexMinMHz = /CPU min MHz:\s+([\d.]+)/g;
-
-					let totalCPU = regexTotalCPU.exec(cpuInfoOutput);
-					let modelNameMatches = [...cpuInfoOutput.matchAll(regexModelName)];
-					let coresPerSocketMatches = [
-						...cpuInfoOutput.matchAll(regexCoresPerSocket),
-					];
-					let scalingMHzMatches = [...cpuInfoOutput.matchAll(regexScalingMHz)];
-					let maxMHzMatches = [...cpuInfoOutput.matchAll(regexMaxMHz)];
-					let minMHzMatches = [...cpuInfoOutput.matchAll(regexMinMHz)];
-
-					// Menyusun informasi yang ditemukan ke dalam format yang diinginkan
-					let cpuInfo = '';
-					if (totalCPU) {
-						cpuInfo += `\`\`\`${totalCPU[0]}\n\n`;
-					}
-					modelNameMatches.forEach((match, index) => {
-						cpuInfo += `Model Name ${index + 1}: ${match[1]}\n`;
-						if (coresPerSocketMatches[index]) {
-							cpuInfo += `Cores per Socket: ${coresPerSocketMatches[index][1]}\n`;
-						}
-						if (scalingMHzMatches[index]) {
-							cpuInfo += `Scaling MHz: ${scalingMHzMatches[index][1]}%\n`;
-						}
-						if (maxMHzMatches[index]) {
-							cpuInfo += `Max MHz: ${maxMHzMatches[index][1]}\n`;
-						}
-						if (minMHzMatches[index]) {
-							cpuInfo += `Min MHz: ${minMHzMatches[index][1]}\n`;
-						}
-						cpuInfo += '\n';
-					});
-					cpuInfo += '```'; // Menutup tag ``` di akhir cpuInfo
+				exec('lscpu', (error, stdout) => {
+					const cpuInfo = error
+						? 'Unknown CPU'
+						: os.cpus()[0]?.model || 'Unknown CPU';
+					const cores = os.cpus().length;
+					const speed = os.cpus()[0]?.speed || 'Unknown';
 
 					const embed = new EmbedBuilder()
-						.setTitle(
-							'<a:Statisticreverse:1117043433022947438> ' +
-								client.user.username +
-								lang.msg19 +
-								' <a:Statistic:1117010987040645220>'
-						)
+						.setTitle(`📊 Bot Statistics - ${client.user.username}`)
 						.setThumbnail(
 							client.user.displayAvatarURL({ dynamic: true, size: 1024 })
 						)
 						.setColor(client.config.embedColor)
-						.setTimestamp();
+						.setTimestamp().setDescription(`**= GENERAL STATISTICS =**
+• **Servers**: ${totalGuilds.toLocaleString()}
+• **Users**: ${totalMembers.toLocaleString()}
+• **Channels**: ${totalChannels.toLocaleString()}
+• **Voice Connections**: ${voiceConnections}
+• **Commands**: ${client.commands.size}
+• **Shards**: ${shardSize}
+• **Ping**: ${client.ws.ping} ms
+• **Uptime**: <t:${Math.floor(Date.now() / 1000 - client.uptime / 1000)}:R>
 
-					const generalButton = new ButtonBuilder()
-						.setCustomId('general_info')
-						.setLabel('General Information')
-						.setStyle(ButtonStyle.Success);
+**= SYSTEM INFORMATION =**
+• **OS**: ${osInfo}
+• **Platform**: ${os.platform()}
+• **Arch**: ${os.arch()}
+• **CPU**: 
+> **Model**: ${cpuInfo}
+> **Cores**: ${cores}
+> **Speed**: ${speed} MHz
+• **Memory**:
+> **Total**: ${totalMemory} MB
+> **Free**: ${freeMemory} MB
+> **Used**: ${usedMemory} MB
+> **Bot Usage**: ${botMemoryUsage} MB`);
 
-					const hardwareButton = new ButtonBuilder()
-						.setCustomId('hardware_info')
-						.setLabel('Hardware Information')
-						.setStyle(ButtonStyle.Success);
-
-					const buttonRow = new ActionRowBuilder().addComponents(
-						generalButton,
-						hardwareButton
-					);
-
-					embed.setDescription(`**General Information:\n\n
-• Owner: \`brusnaclee#0\`
-• Developer: \`brusnaclee#0\`
-• User Count: \`${totalMembers || 0}\`
-• Server Count: \`${totalGuilds || 0}\`
-• Channel Count: \`${totalChannels || 0}\`
-• Shard Count: \`${shardSize || 0}\`
-• Connected Voice: \`${voiceConnections}\`
-• Command Count: \`${client.commands.map((c) => c.name).length}\`
-• Operation Time: <t:${Math.floor(Number(Date.now() - client.uptime) / 1000)}:R>
-• Ping: \`${client.ws.ping} MS\`
-• Invite Bot: [Click](${config.botInvite})
-• Website bot: [Click](${config.supportServer})
-${
-	config.sponsor.status == true
-		? `• Sponsor: [Click](${config.sponsor.url})`
-		: ``
-}
-${
-	config.voteManager.status == true
-		? `• Vote: [Click](${config.voteManager.vote_url})`
-		: ``
-}
-**`);
-
-					interaction
-						.editReply({
-							embeds: [embed],
-							components: [buttonRow],
-						})
-						.then(() => {
-							const filter = (interaction) =>
-								interaction.user.id === interaction.user.id;
-							const collector =
-								interaction.channel.createMessageComponentCollector({
-									filter,
-									time: 120000, // 120 seconds or 2 minute
-								});
-
-							collector.on('collect', async (interaction) => {
-								if (interaction.customId === 'general_info') {
-									embed.setDescription(`**General Information:\n\n
-• Owner: \`brusnaclee#0\`
-• Developer: \`brusnaclee#0\`
-• User Count: \`${totalMembers || 0}\`
-• Server Count: \`${totalGuilds || 0}\`
-• Channel Count: \`${totalChannels || 0}\`
-• Shard Count: \`${shardSize || 0}\`
-• Connected Voice: \`${voiceConnections}\`
-• Command Count: \`${client.commands.map((c) => c.name).length}\`
-• Operation Time: <t:${Math.floor(Number(Date.now() - client.uptime) / 1000)}:R>
-• Ping: \`${client.ws.ping} MS\`
-• Invite Bot: [Click](${config.botInvite})
-• Website bot: [Click](${config.supportServer})
-${
-	config.sponsor.status == true
-		? `• Sponsor: [Click](${config.sponsor.url})`
-		: ``
-}
-${
-	config.voteManager.status == true
-		? `• Vote: [Click](${config.voteManager.vote_url})`
-		: ``
-}
-**`);
-									await interaction.update({ embeds: [embed] });
-								} else if (interaction.customId === 'hardware_info') {
-									embed.setDescription(`**Hardware Information:\n\n
-• CPU Info:${cpuInfo}
-• Host Memory Usage: \`${usedMemory} MB\`
-• Bot Memory Usage: \`${(process.memoryUsage().rss / 1024 / 1024).toFixed(
-										2
-									)} MB\`
-• Architecture: \`${os.arch()}\`
-• OS Version: \`${osVersion}\`
-• Platform: \`${os.platform()}\`
-**`);
-									await interaction.update({ embeds: [embed] });
-								}
-							});
-
-							collector.on('end', async () => {
-								await interaction
-									.editReply({
-										components: [],
-									})
-									.then(() => {
-										setTimeout(async () => {
-											await interaction
-												.deleteReply()
-												.catch((err) => console.error(err));
-										}, 5000);
-									})
-									.catch((err) => console.error(err));
-							});
-						});
+					interaction.editReply({ embeds: [embed] });
 				});
 			});
 		} catch (e) {
-			const errorNotifer = require('../functions.js');
-			errorNotifer(client, interaction, e, lang);
+			console.error(e);
+			await interaction.editReply({
+				content:
+					lang.msgError || 'An error occurred while fetching statistics.',
+			});
 		}
 	},
 };
