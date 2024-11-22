@@ -73,11 +73,8 @@ module.exports = {
 			}
 
 			await interaction.deferReply({
-
 				content: 'loading',
-
 			});
-
 
 			const usedMemory = ((os.totalmem() - os.freemem()) / 1024 / 1024).toFixed(
 				2
@@ -198,7 +195,7 @@ ${
 **`);
 
 					interaction
-					.editReply({
+						.editReply({
 							embeds: [embed],
 							components: [buttonRow],
 						})
