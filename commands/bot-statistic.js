@@ -103,6 +103,7 @@ module.exports = {
 				let coresPerSocketMatches = [
 					...cpuInfoOutput.matchAll(regexCoresPerSocket),
 				];
+				let scalingMHzMatches = [...cpuInfoOutput.matchAll(regexScalingMHz)];
 				let maxMHzMatches = [...cpuInfoOutput.matchAll(regexMaxMHz)];
 				let minMHzMatches = [...cpuInfoOutput.matchAll(regexMinMHz)];
 
