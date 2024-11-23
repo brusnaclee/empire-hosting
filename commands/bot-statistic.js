@@ -80,70 +80,75 @@ module.exports = {
 				2
 			);
 
-			// Execute Linux commands for detailed OS and CPU info
-			exec('lsb_release -a', (error, stdout) => {
-				if (error) {
-					console.error(error);
-					return;
-				}
-				const osInfoLines = stdout.split('\n');
-				const descriptionLine = osInfoLines.find((line) =>
-					line.startsWith('Description:')
-				);
-				const osVersion = descriptionLine
-					? descriptionLine.split(':')[1].trim()
-					: 'Unknown';
-
-				exec('lscpu', (error, cpuInfo) => {
+			exec('lscpu', (error, stdout, stderr) => {
+				try {
 					if (error) {
-						console.error(error);
+						console.error(`exec error: ${error}`);
 						return;
 					}
+					const cpuInfoOutput = stdout;
 
-					// Remove the line containing 'Flags' from the lscpu output
-					const cpuInfoLines = cpuInfo
-						.split('\n')
-						.filter((line) => !line.startsWith('Flags:'));
+					// Parse CPU information
+					const regexTotalCPU = /CPU\(s\):\s+(\d+)/g;
+					const regexModelName = /Model name:\s+(.*)/g;
+					const regexCoresPerSocket = /Core\(s\) per socket:\s+(\d+)/g;
+					const regexMaxMHz = /CPU max MHz:\s+([\d.]+)/g;
+					const regexMinMHz = /CPU min MHz:\s+([\d.]+)/g;
 
-					// Join the remaining lines back together into a string
-					const filteredCpuInfo = cpuInfoLines.join('\n');
+					let totalCPU = regexTotalCPU.exec(cpuInfoOutput);
+					let modelNameMatches = [...cpuInfoOutput.matchAll(regexModelName)];
+					let coresPerSocketMatches = [
+						...cpuInfoOutput.matchAll(regexCoresPerSocket),
+					];
+					let maxMHzMatches = [...cpuInfoOutput.matchAll(regexMaxMHz)];
+					let minMHzMatches = [...cpuInfoOutput.matchAll(regexMinMHz)];
 
-					// General Embed
-					const embed = new EmbedBuilder()
-						.setTitle(
-							`<a:Statisticreverse:1117043433022947438> ${client.user.username} Statistics <a:Statistic:1117010987040645220>`
-						)
-						.setThumbnail(
-							client.user.displayAvatarURL({ dynamic: true, size: 1024 })
-						)
+					// Build CPU info string
+					let cpuInfo = '';
+					if (totalCPU) {
+						cpuInfo += `Total CPUs: ${totalCPU[1]}\n\n`;
+					}
+					modelNameMatches.forEach((match, index) => {
+						cpuInfo += `Model Name ${index + 1}: ${match[1]}\n`;
+						if (coresPerSocketMatches[index]) {
+							cpuInfo += `Cores per Socket: ${coresPerSocketMatches[index][1]}\n`;
+						}
+						if (maxMHzMatches[index]) {
+							cpuInfo += `Max MHz: ${maxMHzMatches[index][1]}\n`;
+						}
+						if (minMHzMatches[index]) {
+							cpuInfo += `Min MHz: ${minMHzMatches[index][1]}\n`;
+						}
+						cpuInfo += '\n';
+					});
+
+					// Create General Embed
+					const generalEmbed = new EmbedBuilder()
+						.setTitle(`${client.user.username} - General Statistics`)
+						.setThumbnail(client.user.displayAvatarURL({ dynamic: true }))
 						.setColor(client.config.embedColor)
 						.setDescription(
-							`**General Information:\n\n
-            • Owner: \`brusnaclee#0\`
-            • Developer: \`brusnaclee#0\`
-            • User Count: \`${totalMembers || 0}\`
-            • Server Count: \`${totalGuilds || 0}\`
-            • Channel Count: \`${totalChannels || 0}\`
-            • Shard Count: \`${shardSize || 0}\`
-            • Connected Voice: \`${voiceConnections}\`
-            • Command Count: \`${client.commands.map((c) => c.name).length}\`
-            • Operation Time: <t:${Math.floor(
-							Number(Date.now() - client.uptime) / 1000
-						)}:R>
-            • Ping: \`${client.ws.ping} MS\`
-            • Invite Bot: [Click](${config.botInvite})
-            • Website Bot: [Click](${config.supportServer})
-            ${
-							config.sponsor.status
-								? `• Sponsor: [Click](${config.sponsor.url})`
-								: ''
-						}
-            ${
-							config.voteManager.status
-								? `• Vote: [Click](${config.voteManager.vote_url})`
-								: ''
-						}
-            **`
+							`**General Information**\n\n` +
+								`• User Count: \`${totalMembers}\`\n` +
+								`• Server Count: \`${totalGuilds}\`\n` +
+								`• Channel Count: \`${totalChannels}\`\n` +
+								`• Shard Count: \`${shardSize}\`\n` +
+								`• Voice Connections: \`${voiceConnections}\`\n` +
+								`• Ping: \`${client.ws.ping} ms\`\n`
+						);
+
+					// Create Hardware Embed
+					const hardwareEmbed = new EmbedBuilder()
+						.setTitle(`${client.user.username} - Hardware Statistics`)
+						.setThumbnail(client.user.displayAvatarURL({ dynamic: true }))
+						.setColor(client.config.embedColor)
+						.setDescription(
+							`**Hardware Information**\n\n` +
+								`• CPU Info:\n${cpuInfo}\n` +
+								`• Memory Usage: \`${usedMemory} MB\`\n` +
+								`• Architecture: \`${os.arch()}\`\n` +
+								`• Node.js Version: \`${process.version}\`\n` +
+								`• Discord.js Version: \`${require('discord.js').version}\`\n`
 						);
 
 					// Buttons
@@ -163,9 +168,12 @@ module.exports = {
 					);
 
 					// Send initial embed with buttons
-					interaction.editReply({ embeds: [embed], components: [buttonRow] });
+					interaction.editReply({
+						embeds: [generalEmbed],
+						components: [buttonRow],
+					});
 
-					// Collector for button interactions
+					// Button Interaction Collector
 					const collector = interaction.channel.createMessageComponentCollector(
 						{
 							filter: (i) => i.user.id === interaction.user.id,
@@ -175,63 +183,29 @@ module.exports = {
 
 					collector.on('collect', async (i) => {
 						if (i.customId === 'general_info') {
-							// Update embed to General Information
-							embed.setDescription(
-								`**General Information:\n\n
-                • Owner: \`brusnaclee#0\`
-                • Developer: \`brusnaclee#0\`
-                • User Count: \`${totalMembers || 0}\`
-                • Server Count: \`${totalGuilds || 0}\`
-                • Channel Count: \`${totalChannels || 0}\`
-                • Shard Count: \`${shardSize || 0}\`
-                • Connected Voice: \`${voiceConnections}\`
-                • Command Count: \`${
-									client.commands.map((c) => c.name).length
-								}\`
-                • Operation Time: <t:${Math.floor(
-									Number(Date.now() - client.uptime) / 1000
-								)}:R>
-                • Ping: \`${client.ws.ping} MS\`
-                • Invite Bot: [Click](${config.botInvite})
-                • Website Bot: [Click](${config.supportServer})
-                ${
-									config.sponsor.status
-										? `• Sponsor: [Click](${config.sponsor.url})`
-										: ''
-								}
-                ${
-									config.voteManager.status
-										? `• Vote: [Click](${config.voteManager.vote_url})`
-										: ''
-								}
-                **`
-							);
-							await i.update({ embeds: [embed] });
+							await i.update({ embeds: [generalEmbed] });
 						} else if (i.customId === 'hardware_info') {
-							// Update embed to Hardware Information
-							embed.setDescription(
-								`**Hardware Information:\n\n
-                • CPU Info: \`${filteredCpuInfo.trim()}\`
-                • Host Memory Usage: \`${usedMemory} MB\`
-                • Bot Memory Usage: \`${(
-									process.memoryUsage().rss /
-									1024 /
-									1024
-								).toFixed(2)} MB\`
-                • Architecture: \`${os.arch()}\`
-                • OS Version: \`${osVersion}\`
-		• Node.js Version: \`${process.version}\`
-                • Discord.js Version: \`${require('discord.js').version}\`
-                **`
-							);
-							await i.update({ embeds: [embed] });
+							await i.update({ embeds: [hardwareEmbed] });
 						}
 					});
 
-					collector.on('end', () => {
-						interaction.editReply({ components: [] }).catch(console.error);
+					collector.on('end', async () => {
+						await interaction
+							.editReply({
+								components: [],
+							})
+							.then(() => {
+								setTimeout(async () => {
+									await interaction
+										.deleteReply()
+										.catch((err) => console.error(err));
+								}, 5000);
+							})
+							.catch((err) => console.error(err));
 					});
-				});
+				} catch (e) {
+					console.error(`Error processing CPU info: ${e.message}`);
+				}
 			});
 		} catch (e) {
 			console.error(e);
