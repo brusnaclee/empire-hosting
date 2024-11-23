@@ -95,6 +95,7 @@ module.exports = {
 				const regexTotalCPU = /CPU\(s\):\s+(\d+)/g;
 				const regexModelName = /Model name:\s+(.*)/g;
 				const regexCoresPerSocket = /Core\(s\) per socket:\s+(\d+)/g;
+				const regexScalingMHz = /CPU\(s\) scaling MHz:\s+(\d+)/g;
 				const regexMaxMHz = /CPU max MHz:\s+([\d.]+)/g;
 				const regexMinMHz = /CPU min MHz:\s+([\d.]+)/g;
 
