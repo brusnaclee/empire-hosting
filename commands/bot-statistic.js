@@ -108,12 +108,15 @@ module.exports = {
 
 				let cpuInfo = '';
 				if (totalCPU) {
-					cpuInfo += `\nTotal CPUs: ${totalCPU[1]}\n`;
+					cpuInfo += `\`\`\`${totalCPU[0]}\n\n`;
 				}
 				modelNameMatches.forEach((match, index) => {
 					cpuInfo += `Model Name ${index + 1}: ${match[1]}\n`;
 					if (coresPerSocketMatches[index]) {
 						cpuInfo += `Cores per Socket: ${coresPerSocketMatches[index][1]}\n`;
+					}
+					if (scalingMHzMatches[index]) {
+						cpuInfo += `Scaling MHz: ${scalingMHzMatches[index][1]}%\n`;
 					}
 					if (maxMHzMatches[index]) {
 						cpuInfo += `Max MHz: ${maxMHzMatches[index][1]}\n`;
@@ -123,6 +126,7 @@ module.exports = {
 					}
 					cpuInfo += '\n';
 				});
+				cpuInfo += '```';
 
 				// General Embed
 				const generalEmbed = new EmbedBuilder()
