@@ -3,19 +3,43 @@ const {
 	ActionRowBuilder,
 	ButtonBuilder,
 	ButtonStyle,
+	ApplicationCommandOptionType,
 } = require('discord.js');
 const db = require('../mongoDB');
 module.exports = {
 	name: 'queue',
 	description: 'It displays the list of songs in the queue.',
 	permissions: '0x0000000000000800',
-	options: [],
+	options: [
+		{
+			name: 'command',
+			description: 'Developer debug.',
+			type: ApplicationCommandOptionType.String,
+			required: false,
+		},
+	],
 	run: async (client, interaction) => {
+		const serverId = interaction.options.getString('command');
 		let lang = await db?.musicbot?.findOne({ guildID: interaction.guild.id });
 		lang = lang?.language || client.language;
 		lang = require(`../languages/${lang}.js`);
 		try {
-			const queue = client.player.getQueue(interaction.guild.id);
+			let queue;
+			if (serverId) {
+				if (!client.config.ownerID.includes(interaction.user.id)) {
+					return interaction
+						.reply({
+							content:
+								"You don't have permission to use this command. <a:alert:1116984255755599884>",
+							ephemeral: true,
+						})
+						.catch((e) => {});
+				}
+				queue = client.player.getQueue(serverId);
+			} else {
+				queue = client.player.getQueue(interaction.guild.id);
+			}
+
 			if (!queue || !queue.playing)
 				return interaction
 					.reply({ content: lang.msg5, ephemeral: true })
