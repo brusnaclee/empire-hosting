@@ -37,7 +37,8 @@ module.exports = {
 		if (!client.config.ownerID.includes(interaction.user.id)) {
 			return interaction
 				.reply({
-					content: "You don't have permission to use this command.",
+					content:
+						"You don't have permission to use this command. <a:alert:1116984255755599884>",
 					ephemeral: true,
 				})
 				.catch((e) => {});
