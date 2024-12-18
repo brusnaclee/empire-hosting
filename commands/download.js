@@ -1,4 +1,10 @@
-const { ApplicationCommandOptionType, EmbedBuilder } = require('discord.js');
+const {
+	ApplicationCommandOptionType,
+	EmbedBuilder,
+	ActionRowBuilder,
+	ButtonStyle,
+	ButtonBuilder,
+} = require('discord.js');
 const db = require('../mongoDB');
 const fs = require('fs');
 const ytdl = require('@distube/ytdl-core');
