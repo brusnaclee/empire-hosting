@@ -198,6 +198,13 @@ module.exports = {
 
 						const googleDriveLink = fileURL;
 
+						const download = new ButtonBuilder()
+							.setLabel('Download Here!!')
+							.setURL(googleDriveLink)
+							.setStyle(ButtonStyle.Link);
+
+						const Row = new ActionRowBuilder().addComponents(download);
+
 						const embed = new EmbedBuilder()
 							.setTitle(`${songName}`)
 							.setThumbnail(thumbnailURL)
@@ -209,7 +216,7 @@ module.exports = {
 							.setFooter({ text: `Empire ❤️` });
 
 						interaction
-							.editReply({ embeds: [embed] })
+							.editReply({ embeds: [embed], components: [Row] })
 							.then(() => {
 								console.log(`Link sent successfully. name: ${musicUrl} `);
 
