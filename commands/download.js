@@ -21,26 +21,20 @@ module.exports = {
 	options: [
 		{
 			name: 'music',
-			description: 'Name song or URL (only support YouTube URL).',
+			description: 'Name song or url (only support youtube url).',
 			type: ApplicationCommandOptionType.String,
 			required: false,
 		},
 		{
 			name: 'format',
-			description: 'Choose the format for download (mp3 or mp4).',
+			description: 'Choose file format (mp3 or mp4).',
 			type: ApplicationCommandOptionType.String,
-			required: false,
 			choices: [
-				{
-					name: 'MP3',
-					value: 'mp3',
-				},
-				{
-					name: 'MP4',
-					value: 'mp4',
-				},
+				{ name: 'MP3', value: 'mp3' },
+				{ name: 'MP4', value: 'mp4' }
 			],
-		},
+			required: false,
+		}
 	],
 	run: async (client, interaction, queue, song) => {
 		try {
@@ -50,8 +44,9 @@ module.exports = {
 			lang = lang?.language || client.language;
 			lang = require(`../languages/${lang}.js`);
 
+			const queue = client?.player?.getQueue(interaction?.guildId);
 			const music = interaction.options.getString('music');
-			const format = interaction.options.getString('format') || 'mp3'; // Default to mp3 if no format is provided
+			const format = interaction.options.getString('format') || 'mp3'; // Default to mp3
 
 			await interaction.deferReply({
 				content: 'loading',
@@ -74,7 +69,10 @@ module.exports = {
 						});
 					}
 				} else {
-					const searchResults = await youtubeSearch.GetListByKeyword(music, false);
+					const searchResults = await youtubeSearch.GetListByKeyword(
+						music,
+						false
+					);
 					if (searchResults.items.length === 0) {
 						return interaction.editReply({
 							content: 'No results found for your query.',
@@ -95,13 +93,18 @@ module.exports = {
 						})
 						.then(() => {
 							setTimeout(async () => {
-								await interaction.deleteReply().catch((err) => console.error(err));
-							}, 5000);
+								await interaction
+									.deleteReply()
+									.catch((err) => console.error(err));
+							}, 5000); // 60 seconds or 1 minutes
 						});
 				}
 				const song = queue.songs[0];
 				songName = song.name;
-				const searchResults = await youtubeSearch.GetListByKeyword(songName, false);
+				const searchResults = await youtubeSearch.GetListByKeyword(
+					songName,
+					false
+				);
 				if (searchResults.items.length === 0) {
 					return interaction.editReply({
 						content: 'No results found for your query.',
@@ -113,6 +116,7 @@ module.exports = {
 				songURL = `https://www.youtube.com/watch?v=${searchResults.items[0].id}`;
 				thumbnailURL = firstResult.thumbnail.thumbnails[0].url;
 			}
+
 			const musicUrl = songURL;
 			const musicName = songName;
 
@@ -141,45 +145,54 @@ module.exports = {
 				musicNames = `audio${count}`;
 			}
 
-			// Download musik dari URL yang diberikan
+			// Tentukan path file berdasarkan format
 			const filePath = `./music/${musicNames}.${format}`;
 			const fileStream = fs.createWriteStream(filePath);
 
-			if (ytdl.validateURL(musicUrl)) {
-				// Jika URL adalah YouTube
-				const quality = format === 'mp3' ? 'highestaudio' : 'highestvideo';
-				ytdl(musicUrl, { quality }).pipe(fileStream);
-			} else if (scdl.isValidUrl(musicUrl)) {
-				// Jika URL adalah SoundCloud
-				scdl
-					.download(musicUrl, CLIENT_ID)
-					.then((stream) => {
-						stream.pipe(fileStream);
-					})
-					.catch((err) => {
-						throw new Error('Error downloading from SoundCloud');
-					});
+			if (format === 'mp3') {
+				// Jika format mp3
+				if (ytdl.validateURL(musicUrl)) {
+					// Download dari YouTube sebagai mp3
+					const initialQuality = 'lowestaudio';
+					ytdl(musicUrl, { quality: initialQuality }).pipe(fileStream);
+				} else if (scdl.isValidUrl(musicUrl)) {
+					// Download dari SoundCloud sebagai mp3
+					scdl
+						.download(musicUrl, CLIENT_ID)
+						.then((stream) => {
+							stream.pipe(fileStream);
+						})
+						.catch((err) => {
+							throw new Error('Error downloading from SoundCloud');
+						});
+				}
+			} else if (format === 'mp4') {
+				// Jika format mp4
+				if (ytdl.validateURL(musicUrl)) {
+					// Download dari YouTube sebagai mp4 (video)
+					const initialQuality = '22'; // 720p, atau kualitas tertinggi yang tersedia
+					ytdl(musicUrl, { quality: initialQuality, filter: 'videoandaudio' }).pipe(fileStream);
+				} else {
+					return interaction
+						.editReply({
+							content: 'Only YouTube URL is supported for mp4 format.',
+							ephemeral: true,
+						});
+				}
 			} else {
 				return interaction
 					.editReply({
-						content: 'URL Invalid. Only YouTube and SoundCloud are supported.',
+						content: 'Invalid format. Only mp3 and mp4 are supported.',
 						ephemeral: true,
-					})
-					.then(() => {
-						setTimeout(async () => {
-							await interaction.deleteReply().catch((err) => console.error(err));
-						}, 5000);
-					})
-					.catch((err) => {
-						console.error('Error sending error message:', err);
 					});
 			}
 
+			// Setelah selesai download
 			fileStream.on('finish', async () => {
 				// Upload musik ke Google Drive
 				const fileMetadata = {
 					name: `${musicName}.${format}`,
-					parents: ['1SNF6krdRx8o3xZldDCLnusAPp6uBhD8e'],
+					parents: ['1SNF6krdRx8o3xZldDCLnusAPp6uBhD8e'], // Ganti dengan ID folder tujuan Anda
 				};
 
 				const media = {
@@ -197,7 +210,9 @@ module.exports = {
 						if (err) {
 							console.error('Error uploading file to Google Drive:', err);
 							fs.unlinkSync(filePath);
-							return res.status(500).send('Error uploading file to Google Drive.');
+							return res
+								.status(500)
+								.send('Error uploading file to Google Drive.');
 						}
 
 						const fileID = file.data.id;
@@ -228,8 +243,10 @@ module.exports = {
 								console.log(`Link sent successfully. name: ${musicUrl} `);
 
 								setTimeout(async () => {
-									await interaction.deleteReply().catch((err) => console.error(err));
-								}, 300000);
+									await interaction
+										.deleteReply()
+										.catch((err) => console.error(err));
+								}, 300000); // 300 seconds
 							})
 							.catch((err) => {
 								console.error('Error sending embed message:', err);
@@ -245,18 +262,25 @@ module.exports = {
 								},
 								(err) => {
 									if (err) {
-										console.error('Error deleting file from Google Drive:', err);
+										console.error(
+											'Error deleting file from Google Drive:',
+											err
+										);
 									} else {
-										console.log('File dihapus dari Google Drive setelah 5 menit.');
+										console.log(
+											'File dihapus dari Google Drive setelah 5 menit.'
+										);
 									}
 								}
 							);
-						}, 5 * 60 * 1000);
+						}, 5 * 60 * 1000); // 5 minutes in milliseconds
 					}
 				);
 			});
 		} catch (e) {
-			let lang = await db?.musicbot?.findOne({ guildID: interaction.guild.id }).catch((e) => {});
+			let lang = await db?.musicbot
+				?.findOne({ guildID: interaction.guild.id })
+				.catch((e) => {});
 			lang = lang?.language || client.language;
 			lang = require(`../languages/${lang}.js`);
 			const errorNotifier = require('../functions.js');
