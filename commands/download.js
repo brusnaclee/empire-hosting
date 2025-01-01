@@ -169,9 +169,22 @@ module.exports = {
 			} else if (format === 'mp4') {
 				// Jika format mp4
 				if (ytdl.validateURL(musicUrl)) {
-					// Download dari YouTube sebagai mp4 (video)
-					const initialQuality = '22'; // 720p, atau kualitas tertinggi yang tersedia
-					ytdl(musicUrl, { quality: initialQuality, filter: 'videoandaudio' }).pipe(fileStream);
+					// Get video info for selecting the correct format
+					const videoInfo = await ytdl.getInfo(musicUrl);
+					
+					// Find the best 720p video format (or fallback)
+					const videoFormats = videoInfo.formats.filter(format => format.hasVideo && format.hasAudio);
+					const bestFormat = videoFormats.find(format => format.qualityLabel === '720p') || videoFormats[0]; // Fallback to the first available
+
+					if (bestFormat) {
+						// Download the selected mp4 format
+						ytdl(musicUrl, { format: bestFormat }).pipe(fileStream);
+					} else {
+						return interaction.editReply({
+							content: 'No compatible video format found.',
+							ephemeral: true,
+						});
+					}
 				} else {
 					return interaction
 						.editReply({
