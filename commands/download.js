@@ -188,17 +188,40 @@ module.exports = {
 						);
 					});
 
-					// Sort by resolution (highest to lowest) and select the best available
-					const bestFormat = videoFormats.sort((a, b) => {
-						const resolutionA = a.height || 0;
-						const resolutionB = b.height || 0;
-						return resolutionB - resolutionA; // Descending order
-					})[0]; // Get the highest quality format
+					// Check if specific itag or highest quality is required
+					const iTag = 22; // Example: 720p, can be dynamic or based on user input
+					const useItag = true; // Set to `false` to use highest quality selection
 
-					if (bestFormat) {
-						// Download the selected mp4 format with the best quality
-						console.log('Downloading Best Format:', bestFormat.qualityLabel);
-						ytdl(musicUrl, { format: bestFormat }).pipe(fileStream);
+					let selectedFormat;
+					if (useItag) {
+						// Find the specific itag format
+						selectedFormat = videoFormats.find(
+							(format) => format.itag === iTag
+						);
+						if (!selectedFormat) {
+							console.log(
+								`No format found for itag: ${iTag}. Using highest quality instead.`
+							);
+							// Fallback to highest quality if itag is not found
+							selectedFormat = videoFormats.sort((a, b) => {
+								const resolutionA = a.height || 0;
+								const resolutionB = b.height || 0;
+								return resolutionB - resolutionA; // Descending order
+							})[0];
+						}
+					} else {
+						// Sort by resolution (highest to lowest) and select the best available
+						selectedFormat = videoFormats.sort((a, b) => {
+							const resolutionA = a.height || 0;
+							const resolutionB = b.height || 0;
+							return resolutionB - resolutionA; // Descending order
+						})[0];
+					}
+
+					if (selectedFormat) {
+						// Download the selected mp4 format
+						console.log('Downloading Format:', selectedFormat.qualityLabel);
+						ytdl(musicUrl, { format: selectedFormat }).pipe(fileStream);
 					} else {
 						return interaction.editReply({
 							content: 'No compatible video format found.',
