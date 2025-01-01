@@ -21,9 +21,25 @@ module.exports = {
 	options: [
 		{
 			name: 'music',
-			description: 'Name song or url (only support youtube url).',
+			description: 'Name song or URL (only support YouTube URL).',
 			type: ApplicationCommandOptionType.String,
 			required: false,
+		},
+		{
+			name: 'format',
+			description: 'Choose the format for download (mp3 or mp4).',
+			type: ApplicationCommandOptionType.String,
+			required: false,
+			choices: [
+				{
+					name: 'MP3',
+					value: 'mp3',
+				},
+				{
+					name: 'MP4',
+					value: 'mp4',
+				},
+			],
 		},
 	],
 	run: async (client, interaction, queue, song) => {
@@ -34,8 +50,8 @@ module.exports = {
 			lang = lang?.language || client.language;
 			lang = require(`../languages/${lang}.js`);
 
-			const queue = client?.player?.getQueue(interaction?.guildId);
 			const music = interaction.options.getString('music');
+			const format = interaction.options.getString('format') || 'mp3'; // Default to mp3 if no format is provided
 
 			await interaction.deferReply({
 				content: 'loading',
@@ -58,10 +74,7 @@ module.exports = {
 						});
 					}
 				} else {
-					const searchResults = await youtubeSearch.GetListByKeyword(
-						music,
-						false
-					);
+					const searchResults = await youtubeSearch.GetListByKeyword(music, false);
 					if (searchResults.items.length === 0) {
 						return interaction.editReply({
 							content: 'No results found for your query.',
@@ -82,18 +95,13 @@ module.exports = {
 						})
 						.then(() => {
 							setTimeout(async () => {
-								await interaction
-									.deleteReply()
-									.catch((err) => console.error(err));
-							}, 5000); // 60 seconds or 1 minutes
+								await interaction.deleteReply().catch((err) => console.error(err));
+							}, 5000);
 						});
 				}
 				const song = queue.songs[0];
-				songNames = song.name;
-				const searchResults = await youtubeSearch.GetListByKeyword(
-					songNames,
-					false
-				);
+				songName = song.name;
+				const searchResults = await youtubeSearch.GetListByKeyword(songName, false);
 				if (searchResults.items.length === 0) {
 					return interaction.editReply({
 						content: 'No results found for your query.',
@@ -115,9 +123,6 @@ module.exports = {
 			});
 			const drive = google.drive({ version: 'v3', auth });
 
-			// SoundCloud Client ID
-			const CLIENT_ID = 'FVqQoT3N6EFHpKzah6KOfyx1RQHdXIYD';
-
 			// Function untuk mengecek apakah file sudah ada
 			function checkFileExists(fileName) {
 				try {
@@ -131,19 +136,19 @@ module.exports = {
 			// Cek apakah file dengan nama yang diberikan sudah ada
 			let musicNames = 'audio';
 			let count = 1;
-			while (checkFileExists(`./music/${musicNames}.mp3`)) {
+			while (checkFileExists(`./music/${musicNames}.${format}`)) {
 				count++;
 				musicNames = `audio${count}`;
 			}
 
 			// Download musik dari URL yang diberikan
-			const filePath = `./music/${musicNames}.mp3`;
+			const filePath = `./music/${musicNames}.${format}`;
 			const fileStream = fs.createWriteStream(filePath);
 
 			if (ytdl.validateURL(musicUrl)) {
 				// Jika URL adalah YouTube
-				const initialQuality = 'lowestaudio';
-				ytdl(musicUrl, { quality: initialQuality }).pipe(fileStream);
+				const quality = format === 'mp3' ? 'highestaudio' : 'highestvideo';
+				ytdl(musicUrl, { quality }).pipe(fileStream);
 			} else if (scdl.isValidUrl(musicUrl)) {
 				// Jika URL adalah SoundCloud
 				scdl
@@ -162,10 +167,8 @@ module.exports = {
 					})
 					.then(() => {
 						setTimeout(async () => {
-							await interaction
-								.deleteReply()
-								.catch((err) => console.error(err));
-						}, 5000); // 5 seconds
+							await interaction.deleteReply().catch((err) => console.error(err));
+						}, 5000);
 					})
 					.catch((err) => {
 						console.error('Error sending error message:', err);
@@ -175,12 +178,12 @@ module.exports = {
 			fileStream.on('finish', async () => {
 				// Upload musik ke Google Drive
 				const fileMetadata = {
-					name: `${musicName}.mp3`,
-					parents: ['1SNF6krdRx8o3xZldDCLnusAPp6uBhD8e'], // Ganti dengan ID folder tujuan Anda
+					name: `${musicName}.${format}`,
+					parents: ['1SNF6krdRx8o3xZldDCLnusAPp6uBhD8e'],
 				};
 
 				const media = {
-					mimeType: 'audio/mpeg',
+					mimeType: format === 'mp3' ? 'audio/mpeg' : 'video/mp4',
 					body: fs.createReadStream(filePath),
 				};
 
@@ -194,9 +197,7 @@ module.exports = {
 						if (err) {
 							console.error('Error uploading file to Google Drive:', err);
 							fs.unlinkSync(filePath);
-							return res
-								.status(500)
-								.send('Error uploading file to Google Drive.');
+							return res.status(500).send('Error uploading file to Google Drive.');
 						}
 
 						const fileID = file.data.id;
@@ -227,10 +228,8 @@ module.exports = {
 								console.log(`Link sent successfully. name: ${musicUrl} `);
 
 								setTimeout(async () => {
-									await interaction
-										.deleteReply()
-										.catch((err) => console.error(err));
-								}, 300000); // 300 seconds
+									await interaction.deleteReply().catch((err) => console.error(err));
+								}, 300000);
 							})
 							.catch((err) => {
 								console.error('Error sending embed message:', err);
@@ -246,25 +245,18 @@ module.exports = {
 								},
 								(err) => {
 									if (err) {
-										console.error(
-											'Error deleting file from Google Drive:',
-											err
-										);
+										console.error('Error deleting file from Google Drive:', err);
 									} else {
-										console.log(
-											'File dihapus dari Google Drive setelah 5 menit.'
-										);
+										console.log('File dihapus dari Google Drive setelah 5 menit.');
 									}
 								}
 							);
-						}, 5 * 60 * 1000); // 5 minutes in milliseconds
+						}, 5 * 60 * 1000);
 					}
 				);
 			});
 		} catch (e) {
-			let lang = await db?.musicbot
-				?.findOne({ guildID: interaction.guild.id })
-				.catch((e) => {});
+			let lang = await db?.musicbot?.findOne({ guildID: interaction.guild.id }).catch((e) => {});
 			lang = lang?.language || client.language;
 			lang = require(`../languages/${lang}.js`);
 			const errorNotifier = require('../functions.js');
