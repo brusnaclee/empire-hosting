@@ -11,10 +11,8 @@ const ytdl = require('@distube/ytdl-core');
 const { google } = require('googleapis');
 const youtubeSearch = require('youtube-search-api');
 const scdl = require('soundcloud-downloader').default;
+
 const axios = require('axios');
-const ffmpeg = require('fluent-ffmpeg'); // Make sure to install fluent-ffmpeg
-const path = require('path');
-const CLIENT_ID = 'FVqQoT3N6EFHpKzah6KOfyx1RQHdXIYD';
 
 module.exports = {
 	name: 'download',
@@ -115,7 +113,6 @@ module.exports = {
 				songURL = `https://www.youtube.com/watch?v=${searchResults.items[0].id}`;
 				thumbnailURL = firstResult.thumbnail.thumbnails[0].url;
 			}
-
 			const musicUrl = songURL;
 			const musicName = songName;
 
@@ -144,42 +141,120 @@ module.exports = {
 				musicNames = `audio${count}`;
 			}
 
-			// File path
+			// Download musik dari URL yang diberikan
 			const filePath = `./music/${musicNames}.${format}`;
+			const fileStream = fs.createWriteStream(filePath);
 
-			if (format === 'mp4') {
-				// Download both audio and video streams and merge them into a single MP4 file
-				const videoStream = ytdl(musicUrl, { quality: '22' }); // 720p video stream
-				const audioStream = ytdl(musicUrl, { quality: 'highestaudio' });
-
-				// Combine the video and audio streams using ffmpeg
-				ffmpeg()
-					.input(videoStream)
-					.input(audioStream)
-					.output(filePath)
-					.on('end', async () => {
-						// Upload the MP4 file to Google Drive
-						await uploadToGoogleDrive(filePath, musicName, format, thumbnailURL, songName, interaction);
-					})
-					.on('error', (err) => {
-						console.error('Error while merging audio and video:', err);
-						interaction.editReply({
-							content: 'There was an error merging the video and audio.',
-							ephemeral: true,
-						});
-					})
-					.run();
-			} else {
-				// For MP3 download (as before)
-				const fileStream = fs.createWriteStream(filePath);
-				const quality = 'highestaudio'; // For MP3
+			if (ytdl.validateURL(musicUrl)) {
+				// Jika URL adalah YouTube
+				const quality = format === 'mp3' ? 'highestaudio' : 'highestvideo';
 				ytdl(musicUrl, { quality }).pipe(fileStream);
-
-				fileStream.on('finish', async () => {
-					// Upload the MP3 file to Google Drive
-					await uploadToGoogleDrive(filePath, musicName, format, thumbnailURL, songName, interaction);
-				});
+			} else if (scdl.isValidUrl(musicUrl)) {
+				// Jika URL adalah SoundCloud
+				scdl
+					.download(musicUrl, CLIENT_ID)
+					.then((stream) => {
+						stream.pipe(fileStream);
+					})
+					.catch((err) => {
+						throw new Error('Error downloading from SoundCloud');
+					});
+			} else {
+				return interaction
+					.editReply({
+						content: 'URL Invalid. Only YouTube and SoundCloud are supported.',
+						ephemeral: true,
+					})
+					.then(() => {
+						setTimeout(async () => {
+							await interaction.deleteReply().catch((err) => console.error(err));
+						}, 5000);
+					})
+					.catch((err) => {
+						console.error('Error sending error message:', err);
+					});
 			}
+
+			fileStream.on('finish', async () => {
+				// Upload musik ke Google Drive
+				const fileMetadata = {
+					name: `${musicName}.${format}`,
+					parents: ['1SNF6krdRx8o3xZldDCLnusAPp6uBhD8e'],
+				};
+
+				const media = {
+					mimeType: format === 'mp3' ? 'audio/mpeg' : 'video/mp4',
+					body: fs.createReadStream(filePath),
+				};
+
+				drive.files.create(
+					{
+						resource: fileMetadata,
+						media: media,
+						fields: 'id',
+					},
+					(err, file) => {
+						if (err) {
+							console.error('Error uploading file to Google Drive:', err);
+							fs.unlinkSync(filePath);
+							return res.status(500).send('Error uploading file to Google Drive.');
+						}
+
+						const fileID = file.data.id;
+						const fileURL = `https://drive.google.com/file/d/${fileID}/view`;
+
+						const googleDriveLink = fileURL;
+
+						const download = new ButtonBuilder()
+							.setLabel('Download Here!!')
+							.setURL(googleDriveLink)
+							.setStyle(ButtonStyle.Link);
+
+						const Row = new ActionRowBuilder().addComponents(download);
+
+						const embed = new EmbedBuilder()
+							.setTitle(`${songName}`)
+							.setThumbnail(thumbnailURL)
+							.setColor(client.config.embedColor)
+							.setDescription(
+								`[Download from Google Drive](${googleDriveLink})`
+							)
+							.setTimestamp()
+							.setFooter({ text: `Empire ❤️` });
+
+						interaction
+							.editReply({ embeds: [embed], components: [Row] })
+							.then(() => {
+								console.log(`Link sent successfully. name: ${musicUrl} `);
+
+								setTimeout(async () => {
+									await interaction.deleteReply().catch((err) => console.error(err));
+								}, 300000);
+							})
+							.catch((err) => {
+								console.error('Error sending embed message:', err);
+							});
+
+						fs.unlinkSync(filePath);
+
+						// Schedule file deletion after 5 minutes
+						setTimeout(() => {
+							drive.files.delete(
+								{
+									fileId: fileID,
+								},
+								(err) => {
+									if (err) {
+										console.error('Error deleting file from Google Drive:', err);
+									} else {
+										console.log('File dihapus dari Google Drive setelah 5 menit.');
+									}
+								}
+							);
+						}, 5 * 60 * 1000);
+					}
+				);
+			});
 		} catch (e) {
 			let lang = await db?.musicbot?.findOne({ guildID: interaction.guild.id }).catch((e) => {});
 			lang = lang?.language || client.language;
@@ -189,86 +264,3 @@ module.exports = {
 		}
 	},
 };
-
-async function uploadToGoogleDrive(filePath, musicName, format, thumbnailURL, songName, interaction) {
-	// Inisialisasi Google Drive
-	const auth = new google.auth.GoogleAuth({
-		keyFile: 'music-empire-421010-fbb0df18fbd8.json',
-		scopes: ['https://www.googleapis.com/auth/drive.file'],
-	});
-	const drive = google.drive({ version: 'v3', auth });
-
-	const fileMetadata = {
-		name: `${musicName}.${format}`,
-		parents: ['1SNF6krdRx8o3xZldDCLnusAPp6uBhD8e'], // Ganti dengan ID folder tujuan Anda
-	};
-
-	const media = {
-		mimeType: format === 'mp3' ? 'audio/mpeg' : 'video/mp4',
-		body: fs.createReadStream(filePath),
-	};
-
-	drive.files.create(
-		{
-			resource: fileMetadata,
-			media: media,
-			fields: 'id',
-		},
-		(err, file) => {
-			if (err) {
-				console.error('Error uploading file to Google Drive:', err);
-				fs.unlinkSync(filePath);
-				return interaction.editReply('Error uploading file to Google Drive.');
-			}
-
-			const fileID = file.data.id;
-			const fileURL = `https://drive.google.com/file/d/${fileID}/view`;
-			const googleDriveLink = fileURL;
-
-			const download = new ButtonBuilder()
-				.setLabel('Download Here!!')
-				.setURL(googleDriveLink)
-				.setStyle(ButtonStyle.Link);
-
-			const Row = new ActionRowBuilder().addComponents(download);
-
-			const embed = new EmbedBuilder()
-				.setTitle(`${songName}`)
-				.setThumbnail(thumbnailURL)
-				.setColor('#00FF00')
-				.setDescription(`[Download from Google Drive](${googleDriveLink})`)
-				.setTimestamp()
-				.setFooter({ text: `Empire ❤️` });
-
-			interaction
-				.editReply({ embeds: [embed], components: [Row] })
-				.then(() => {
-					console.log(`Link sent successfully for ${musicName}`);
-					setTimeout(async () => {
-						await interaction.deleteReply().catch((err) => console.error(err));
-					}, 300000); // 5 minutes
-				})
-				.catch((err) => {
-					console.error('Error sending embed message:', err);
-				});
-
-			fs.unlinkSync(filePath); // Clean up local file
-
-			// Schedule file deletion after 5 minutes
-			setTimeout(() => {
-				drive.files.delete(
-					{
-						fileId: fileID,
-					},
-					(err) => {
-						if (err) {
-							console.error('Error deleting file from Google Drive:', err);
-						} else {
-							console.log('File deleted from Google Drive after 5 minutes.');
-						}
-					}
-				);
-			}, 5 * 60 * 1000); // 5 minutes in milliseconds
-		}
-	);
-}
