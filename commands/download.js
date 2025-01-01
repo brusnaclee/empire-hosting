@@ -171,25 +171,20 @@ module.exports = {
 					// Get video info to select the correct format
 					const videoInfo = await ytdl.getInfo(musicUrl);
 
-					// Filter available video formats
+					// Filter available video formats that have both video and audio
 					const videoFormats = videoInfo.formats.filter(
 						(format) => format.hasVideo && format.hasAudio
 					);
 
-					// Sort by resolution (highest to lowest) and select the best available
-					const sortedFormats = videoFormats.sort((a, b) => {
-						const resolutionA = a.height || 0;
-						const resolutionB = b.height || 0;
-						return resolutionB - resolutionA; // Descending order
-					});
-
-					// Select the best format (prefer 720p or the highest available)
-					const bestFormat =
-						sortedFormats.find((format) => format.height === 720) ||
-						sortedFormats[0];
+					// Sort by bitrate (highest to lowest) to ensure the best quality
+					const bestFormat = videoFormats.sort((a, b) => {
+						const bitrateA = a.bitrate || 0;
+						const bitrateB = b.bitrate || 0;
+						return bitrateB - bitrateA; // Descending order
+					})[0]; // Get the highest quality format
 
 					if (bestFormat) {
-						// Download the selected mp4 format
+						// Download the selected mp4 format with the best quality
 						ytdl(musicUrl, { format: bestFormat }).pipe(fileStream);
 					} else {
 						return interaction.editReply({
