@@ -176,15 +176,28 @@ module.exports = {
 						(format) => format.hasVideo && format.hasAudio
 					);
 
-					// Sort by bitrate (highest to lowest) to ensure the best quality
+					// Log all available formats (debugging purposes)
+					console.log('Available Formats:');
+					videoFormats.forEach((format, index) => {
+						console.log(
+							`${index + 1}. Resolution: ${
+								format.qualityLabel || 'Unknown'
+							}, Bitrate: ${format.bitrate || 'Unknown'}, Codec: ${
+								format.codecs
+							}`
+						);
+					});
+
+					// Sort by resolution (highest to lowest) and select the best available
 					const bestFormat = videoFormats.sort((a, b) => {
-						const bitrateA = a.bitrate || 0;
-						const bitrateB = b.bitrate || 0;
-						return bitrateB - bitrateA; // Descending order
+						const resolutionA = a.height || 0;
+						const resolutionB = b.height || 0;
+						return resolutionB - resolutionA; // Descending order
 					})[0]; // Get the highest quality format
 
 					if (bestFormat) {
 						// Download the selected mp4 format with the best quality
+						console.log('Downloading Best Format:', bestFormat.qualityLabel);
 						ytdl(musicUrl, { format: bestFormat }).pipe(fileStream);
 					} else {
 						return interaction.editReply({
