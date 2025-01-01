@@ -31,10 +31,10 @@ module.exports = {
 			type: ApplicationCommandOptionType.String,
 			choices: [
 				{ name: 'MP3', value: 'mp3' },
-				{ name: 'MP4', value: 'mp4' }
+				{ name: 'MP4', value: 'mp4' },
 			],
 			required: false,
-		}
+		},
 	],
 	run: async (client, interaction, queue, song) => {
 		try {
@@ -167,14 +167,26 @@ module.exports = {
 						});
 				}
 			} else if (format === 'mp4') {
-				// Jika format mp4
 				if (ytdl.validateURL(musicUrl)) {
-					// Get video info for selecting the correct format
+					// Get video info to select the correct format
 					const videoInfo = await ytdl.getInfo(musicUrl);
-					
-					// Find the best 720p video format (or fallback)
-					const videoFormats = videoInfo.formats.filter(format => format.hasVideo && format.hasAudio);
-					const bestFormat = videoFormats.find(format => format.qualityLabel === '720p') || videoFormats[0]; // Fallback to the first available
+
+					// Filter available video formats
+					const videoFormats = videoInfo.formats.filter(
+						(format) => format.hasVideo && format.hasAudio
+					);
+
+					// Sort by resolution (highest to lowest) and select the best available
+					const sortedFormats = videoFormats.sort((a, b) => {
+						const resolutionA = a.height || 0;
+						const resolutionB = b.height || 0;
+						return resolutionB - resolutionA; // Descending order
+					});
+
+					// Select the best format (prefer 720p or the highest available)
+					const bestFormat =
+						sortedFormats.find((format) => format.height === 720) ||
+						sortedFormats[0];
 
 					if (bestFormat) {
 						// Download the selected mp4 format
@@ -186,18 +198,16 @@ module.exports = {
 						});
 					}
 				} else {
-					return interaction
-						.editReply({
-							content: 'Only YouTube URL is supported for mp4 format.',
-							ephemeral: true,
-						});
-				}
-			} else {
-				return interaction
-					.editReply({
-						content: 'Invalid format. Only mp3 and mp4 are supported.',
+					return interaction.editReply({
+						content: 'Only YouTube URL is supported for mp4 format.',
 						ephemeral: true,
 					});
+				}
+			} else {
+				return interaction.editReply({
+					content: 'Invalid format. Only mp3 and mp4 are supported.',
+					ephemeral: true,
+				});
 			}
 
 			// Setelah selesai download
