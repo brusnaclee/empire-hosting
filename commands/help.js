@@ -26,15 +26,20 @@ module.exports = {
 			const chatbot = interaction.options.getString('chatbot');
 			if (chatbot) {
 				await interaction.deferReply({ content: 'loading' });
-
+				const MODEL_NAME = 'gemini-1.5-flash-latest';
 				const key = client.config.GEMINI;
+				const genAI = new GoogleGenerativeAI(key);
 
-				const data = {
-					model: 'gpt-4o',
-					messages: [
-						{
-							role: 'user',
-							content: `You are Empire AI, a multilingual expert in music and the ultimate guide to Empire Music Apps. You provide accurate, professional, and detailed responses to questions about music and Empire Music Apps via discord apps. 
+				const model = genAI.getGenerativeModel({ model: MODEL_NAME });
+				const generationConfig = {
+					temperature: 0.9,
+					topK: 1,
+					topP: 1,
+					maxOutputTokens: 4096,
+				};
+				const parts = [
+					{
+						text: `You are Empire AI, a multilingual expert in music and the ultimate guide to Empire Music Apps. You provide accurate, professional, and detailed responses to questions about music and Empire Music Apps via discord apps. 
 
 When a user asks a question:
 1. If the question is about music or Empire Music Apps (including history, technology, culture, or any topic as long as it relates to music), answer with detailed and insightful information.
@@ -159,45 +164,30 @@ Empire commands information:
 
 /volume - Allows you to adjust the music volume. Usage /volume for show the volume, /volume (the value wanna change) /volume 100
 
-Now this is the question from the <@${interaction.user.id}>: ${chatbot}
-`,
-						},
-					],
-					temperature: 0.7,
-				};
+Now this is the question from the <@${interaction.user.id}>: ${chatbot}`,
+					},
+				];
+				const result = await model.generateContent({
+					contents: [{ role: 'user', parts }],
+					generationConfig,
+				});
+				const reply = await result.response.text();
 
-				axios
-					.post(
-						'https://gemini-openai-proxy.zuisong.workers.dev/v1/chat/completions',
-						data,
-						{
-							headers: {
-								Authorization: `Bearer ${key}`, // Replace with your actual API key
-								'Content-Type': 'application/json',
-							},
-						}
-					)
-					.then((response) => {
-						const reply = response.data.choices[0].message.content;
-						const embed = new EmbedBuilder()
-							.setTitle(`Empire AI`)
-							.setDescription(`> ${reply}`)
-							.setColor(client.config.embedColor)
-							.setTimestamp();
-						return interaction
-							.editReply({ embeds: [embed] })
-							.then(() => {
-								setTimeout(async () => {
-									await interaction
-										.deleteReply()
-										.catch((err) => console.error(err));
-								}, 120000); // 120 seconds or 2 minutes
-							})
-							.catch((e) => {});
+				const embed = new EmbedBuilder()
+					.setTitle(`Empire Chatbot`)
+					.setDescription(`> ${reply}`)
+					.setColor(client.config.embedColor)
+					.setTimestamp();
+				return interaction
+					.editReply({ embeds: [embed] })
+					.then(() => {
+						setTimeout(async () => {
+							await interaction
+								.deleteReply()
+								.catch((err) => console.error(err));
+						}, 120000); // 120 seconds or 2 minutes
 					})
-					.catch((error) => {
-						console.error('Error:', error);
-					});
+					.catch((e) => {});
 			} else {
 				const commands = client.commands.filter((x) => x.showHelp !== false);
 
