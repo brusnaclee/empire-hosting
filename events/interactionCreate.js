@@ -520,12 +520,12 @@ module.exports = async (client, interaction) => {
 					case 'lyric_button':
 						try {
 							const config = require('../config.js');
-							//const lyricsFinder = require('lyrics-finder');
 							const geniusApi = require('genius-lyrics-api');
+							const Genius = require('genius-lyrics');
 							const apiKey = config.GENIUS;
+							const db = require('../mongoDB');
+							const Client = new Genius.Client(apiKey);
 
-							const songNames = '';
-							const artistNames = ' ';
 							const queue = client.player.getQueue(interaction.guild.id);
 							await interaction.deferReply({
 								content: 'loading',
@@ -533,52 +533,42 @@ module.exports = async (client, interaction) => {
 							});
 
 							let titles = '';
-							let artists = typeof artistNames === 'string' ? artistNames : ' ';
-							if (songNames) {
-								// If the song name is provided, use that song
-								title = songNames;
-							} else {
-								// If the song name is not provided, use the currently playing song
-								if (!queue || !queue.playing) {
-									return interaction
-										.editReply({
-											content: `${lang.msg5} <a:alert:1116984255755599884>`,
-											ephemeral: true,
-										})
-										.then(() => {
-											setTimeout(async () => {
-												await interaction
-													.deleteReply()
-													.catch((err) => console.error(err));
-											}, 5000); // 60 seconds or 1 minutes
-										});
-								}
-								titles = queue.songs[0].name;
+							let artists = ' ';
+							if (!queue || !queue.playing) {
+								return interaction
+									.editReply({
+										content: 'No song is currently playing.',
+										ephemeral: true,
+									})
+									.then(() => {
+										setTimeout(async () => {
+											await interaction
+												.deleteReply()
+												.catch((err) => console.error(err));
+										}, 5000);
+									});
 							}
+							titles = queue.songs[0].name;
 
 							const removeUnwantedWords = (str) => {
 								return str
 									.replace(
-										/\(.*?\)|\[.*?\]|\bofficial\b|\bmusic\b|\bvideo\b|\blive\b|\blyrics\b|\blyric\b|\blirik\b|\bHD\b|\bversion\b|\bfull\b|\bMV\b|\bmv\b|\bcover\b|\bremix\b|\bfeaturing\b|\bver\b|\bversion\b|\bedit\b|\bclip\b|\bteaser\b|\btrailer\b|\bofficial audio\b|\bperformance\b|\bconcert\b|\bkaraoke\b|\btour\b|\bremastered\b|\bremake\b|\bintro\b|\boutro\b|\bvisualizer\b|\bvisual\b|\btrack\b|\bcensored\b|\bopening\b|\bop\b|\bending\b|\bed\b|\bcreditless\b|\bcc\b|['.,":;\/\[\]()\-]/gi, // Menambahkan unwanted words dan simbol termasuk -
+										/\(.*?\)|\[.*?\]|\bofficial\b|\bmusic\b|\bvideo\b|\blive\b|\blyrics\b|\blyric\b|\blirik\b|\bHD\b|\bversion\b|\bfull\b|\bMV\b|\bmv\b|\bcover\b|\bremix\b|\bfeaturing\b|\bver\b|\bversion\b|\bedit\b|\bclip\b|\bteaser\b|\btrailer\b|\bofficial audio\b|\bperformance\b|\bconcert\b|\bkaraoke\b|\btour\b|\bremastered\b|\bremake\b|\bintro\b|\boutro\b|\bvisualizer\b|\bvisual\b|\btrack\b|\bcensored\b|\bopening\b|\bop\b|\bending\b|\bed\b|\bcreditless\b|\bcc\b|['.,":;\/\[\]()\-]/gi,
 										''
 									)
 									.replace(/\bft\.?.*$/i, '')
 									.replace(/\bfeat\.?.*$/i, '')
 									.replace(/\bby\b.*$/i, '')
-									.replace(/\|.*$/g, '') // Menambahkan regex untuk menghapus semua kata setelah |
+									.replace(/\|.*$/g, '')
 									.trim();
 							};
 
 							titles = removeUnwantedWords(titles);
 
-							const options = {
-								apiKey: apiKey || '',
-								title: titles || '',
-								artist: artists || ' ',
-								optimizeQuery: true,
-							};
+							const searches = await Client.songs.search(`${titles}`);
+							const firstSong = searches[0];
 
-							const lyrics = await geniusApi.getLyrics(options);
+							const lyrics = await firstSong.lyrics();
 
 							if (!lyrics) {
 								return interaction
@@ -591,18 +581,18 @@ module.exports = async (client, interaction) => {
 											await interaction
 												.deleteReply()
 												.catch((err) => console.error(err));
-										}, 5000); // 600 seconds or 10 minutes
+										}, 5000);
 									});
 							}
 
 							const embed = new EmbedBuilder()
 								.setColor(client.config.embedColor)
-								.setTitle(titles)
+								.setTitle(`${firstSong.title} - ${firstSong.artist.name}`)
 								.setDescription(lyrics)
+								.setThumbnail(firstSong.thumbnail)
 								.setTimestamp()
 								.setFooter({ text: 'Empire ❤️' });
 
-							// Edit the reply with ephemeral set to false
 							await interaction
 								.editReply({ embeds: [embed], ephemeral: false })
 								.then(() => {
@@ -610,7 +600,7 @@ module.exports = async (client, interaction) => {
 										await interaction
 											.deleteReply()
 											.catch((err) => console.error(err));
-									}, 600000); // 600 seconds or 10 minutes
+									}, 600000);
 								});
 						} catch (error) {
 							let lang = await db?.musicbot?.findOne({
@@ -618,7 +608,6 @@ module.exports = async (client, interaction) => {
 							});
 							lang = lang?.language || client.language;
 							lang = require(`../languages/${lang}.js`);
-							const queue = client.player.getQueue(interaction.guild.id);
 							console.error(error);
 							if (error.code === 10062 || error.status === 404) {
 								return interaction
@@ -628,7 +617,7 @@ module.exports = async (client, interaction) => {
 											await interaction
 												.deleteReply()
 												.catch((err) => console.error(err));
-										}, 5000); // 600 seconds or 10 minutes
+										}, 5000);
 									});
 							}
 							interaction
@@ -641,7 +630,7 @@ module.exports = async (client, interaction) => {
 										await interaction
 											.deleteReply()
 											.catch((err) => console.error(err));
-									}, 5000); // 600 seconds or 10 minutes
+									}, 5000);
 								});
 						}
 
