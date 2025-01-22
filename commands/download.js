@@ -11,8 +11,11 @@ const ytdl = require('@distube/ytdl-core');
 const { google } = require('googleapis');
 const youtubeSearch = require('youtube-search-api');
 const scdl = require('soundcloud-downloader').default;
-
+require('dotenv').config();
 const axios = require('axios');
+
+const cookies = JSON.parse(process.env.COOKIES);
+const agent = ytdl.createAgent(cookies);
 
 module.exports = {
 	name: 'download',
@@ -58,7 +61,7 @@ module.exports = {
 			if (music) {
 				if (ytdl.validateURL(music)) {
 					songURL = music;
-					const videoInfo = await ytdl.getInfo(music);
+					const videoInfo = await ytdl.getInfo(music, { agent });
 					songName = videoInfo.videoDetails.title;
 					if (videoInfo.videoDetails.thumbnails.length > 0) {
 						thumbnailURL = videoInfo.videoDetails.thumbnails[0].url;
@@ -154,7 +157,7 @@ module.exports = {
 				if (ytdl.validateURL(musicUrl)) {
 					// Download dari YouTube sebagai mp3
 					const initialQuality = 'lowestaudio';
-					ytdl(musicUrl, { quality: initialQuality }).pipe(fileStream);
+					ytdl(musicUrl, { quality: initialQuality, agent }).pipe(fileStream);
 				} else if (scdl.isValidUrl(musicUrl)) {
 					// Download dari SoundCloud sebagai mp3
 					scdl
@@ -221,7 +224,7 @@ module.exports = {
 					if (selectedFormat) {
 						// Download the selected mp4 format
 						console.log('Downloading Format:', selectedFormat.qualityLabel);
-						ytdl(musicUrl, { format: selectedFormat }).pipe(fileStream);
+						ytdl(musicUrl, { format: selectedFormat, agent }).pipe(fileStream);
 					} else {
 						return interaction.editReply({
 							content: 'No compatible video format found.',
