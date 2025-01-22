@@ -14,7 +14,7 @@ const youtubeSearch = require('youtube-search-api');
 const scdl = require('soundcloud-downloader').default;
 
 const axios = require('axios');
-const cookiesPath = path.resolve(__dirname, '../..', 'cookies.json');
+const cookiesPath = path.resolve(__dirname, '..', 'cookies.json');
 let cookies;
 try {
 	const cookiesData = fs.readFileSync(cookiesPath, 'utf8');
