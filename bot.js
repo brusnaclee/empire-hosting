@@ -6,6 +6,17 @@ const { DeezerPlugin } = require('@distube/deezer');
 const { YtDlpPlugin } = require('@distube/yt-dlp');
 const config = require('./config.js');
 const fs = require('fs');
+const path = require('path');
+
+const cookiesPath = path.resolve(__dirname, 'cookies.json');
+let cookies;
+try {
+	const cookiesData = fs.readFileSync(cookiesPath, 'utf8');
+	cookies = JSON.parse(cookiesData);
+} catch (error) {
+	console.error('Error reading cookies.json:', error);
+}
+
 const client = new Client({
 	partials: [
 		Partials.Channel, // for text channel
@@ -30,6 +41,7 @@ client.player = new DisTube(client, {
 	emitAddSongWhenCreatingQueue: false,
 	emitAddListWhenCreatingQueue: false,
 	nsfw: true,
+	youtubeCookie: cookies,
 	ytdlOptions: {
 		highWaterMark: 1024 * 1024 * 64,
 		quality: 'highestaudio',
