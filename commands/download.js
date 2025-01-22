@@ -11,10 +11,17 @@ const ytdl = require('@distube/ytdl-core');
 const { google } = require('googleapis');
 const youtubeSearch = require('youtube-search-api');
 const scdl = require('soundcloud-downloader').default;
-require('dotenv').config();
-const axios = require('axios');
 
-const cookies = JSON.parse(process.env.COOKIES);
+const axios = require('axios');
+const cookiesPath = path.resolve(__dirname, '../..', 'cookies.json');
+let cookies;
+try {
+	const cookiesData = fs.readFileSync(cookiesPath, 'utf8');
+	cookies = JSON.parse(cookiesData);
+} catch (error) {
+	console.error('Error reading cookies.json:', error);
+}
+
 const agent = ytdl.createAgent(cookies);
 
 module.exports = {
