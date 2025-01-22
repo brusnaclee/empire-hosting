@@ -7,6 +7,7 @@ const {
 } = require('discord.js');
 const db = require('../mongoDB');
 const fs = require('fs');
+const path = require('path');
 const ytdl = require('@distube/ytdl-core');
 const { google } = require('googleapis');
 const youtubeSearch = require('youtube-search-api');
