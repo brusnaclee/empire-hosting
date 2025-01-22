@@ -179,10 +179,8 @@ module.exports = {
 				}
 			} else if (format === 'mp4') {
 				if (ytdl.validateURL(musicUrl)) {
-					// Get video info to select the correct format
-					const videoInfo = await ytdl.getInfo(musicUrl);
+					const videoInfo = await ytdl.getInfo(musicUrl, { agent });
 
-					// Filter available video formats that have both video and audio
 					const videoFormats = videoInfo.formats.filter(
 						(format) => format.hasVideo && format.hasAudio
 					);
