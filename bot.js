@@ -32,6 +32,27 @@ const client = new Client({
 	],
 });
 
+let plugins;
+if (config.clientId && config.clientSecret) {
+	plugins = [
+		new SpotifyPlugin({
+			parallel: true,
+			emitEventsAfterFetching: true,
+			api: { clientId: config.clientId, clientSecret: config.clientSecret },
+		}),
+		new SoundCloudPlugin(),
+		new DeezerPlugin(),
+		new YtDlpPlugin(),
+	];
+} else {
+	plugins = [
+		new SpotifyPlugin(),
+		new SoundCloudPlugin(),
+		new DeezerPlugin(),
+		new YtDlpPlugin(),
+	];
+}
+
 client.config = config;
 client.player = new DisTube(client, {
 	leaveOnStop: config.opt.voiceConfig.leaveOnStop,
@@ -49,12 +70,7 @@ client.player = new DisTube(client, {
 		liveBuffer: 60000,
 		dlChunkSize: 1024 * 1024 * 4,
 	},
-	plugins: [
-		new SpotifyPlugin(),
-		new SoundCloudPlugin(),
-		new YtDlpPlugin(),
-		new DeezerPlugin(),
-	],
+	plugins: plugins,
 });
 
 const player = client.player;
