@@ -71,6 +71,7 @@ client.player = new DisTube(client, {
 		dlChunkSize: 1024 * 1024 * 4,
 	},
 	plugins: plugins,
+	directLink: true,
 });
 
 const player = client.player;
