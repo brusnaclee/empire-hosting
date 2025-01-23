@@ -5,6 +5,8 @@ module.exports = {
 	ownerID2: ['522711969560657921', '558280654412840993'],
 	GEMINI: process.env.GEMINI,
 	GENIUS: process.env.GENIUS,
+	clientId: process.env.CLIENTID,
+	clientSecret: process.env.SECRET,
 	botInvite:
 		'https://discord.com/oauth2/authorize?client_id=1044063413833302108&permissions=414585318465&scope=bot+applications.commands', //write your discord bot invite.
 	supportServer: 'https://empire.is-great.net/', //write your discord bot support server invite.
